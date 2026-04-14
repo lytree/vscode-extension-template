@@ -24,7 +24,7 @@ export class TemplatePanel {
       {
         enableScripts: true,
         retainContextWhenHidden: true,
-        localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'webviews')]
+        localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'src', 'webviews')]
       }
     );
 
@@ -64,12 +64,12 @@ export class TemplatePanel {
   }
 
   private getWebviewContent(webview: vscode.Webview): string {
-    const htmlPath = path.join(this.extensionUri.fsPath, 'webviews', 'index.html');
+    const htmlPath = path.join(this.extensionUri.fsPath, 'src', 'webviews', 'index.html');
     const template = fs.readFileSync(htmlPath, 'utf8');
     const nonce = getNonce();
 
-    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'webviews', 'main.js'));
-    const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'webviews', 'style.css'));
+    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'src', 'webviews', 'main.js'));
+    const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, 'src', 'webviews', 'style.css'));
 
     return template
       .replace(/__CSP_SOURCE__/g, webview.cspSource)

@@ -2,7 +2,7 @@
   "name": "vscode-extension-template",
   "displayName": "VSCode Extension Template",
   "description": "TypeScript VS Code extension template (Node.js 22 + pnpm) with a built-in Webview page.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "your-publisher",
   "packageManager": "pnpm@10.13.1",
   "engines": {
@@ -27,7 +27,7 @@
   "scripts": {
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "lint": "eslint \"src/**/*.ts\"",
+    "lint": "eslint \"extension/**/*.ts\"",
     "typecheck": "tsc --noEmit -p ./",
     "pretest": "pnpm run compile && pnpm run lint",
     "test": "node ./out/test/runTest.js"
