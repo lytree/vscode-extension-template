@@ -2,17 +2,17 @@ import * as vscode from 'vscode';
 
 type PageType = 'panel' | 'view';
 
-const pageConfig: Record<PageType, { script: string; style: string; title: string }> = {
-  panel: { script: 'media/panel/index.js', style: 'media/panel/index.css', title: 'Webview Panel' },
-  view: { script: 'media/view/index.js', style: 'media/view/index.css', title: 'Webview View' }
+const pageConfig: Record<PageType, { kind: 'panel' | 'view'; title: string }> = {
+  panel: { kind: 'panel', title: 'Webview Panel' },
+  view: { kind: 'view', title: 'Webview View' }
 };
 
 export function renderWebviewHtml(webview: vscode.Webview, extensionUri: vscode.Uri, page: PageType): string {
   const nonce = getNonce();
-  const { script, style, title } = pageConfig[page];
+  const { kind, title } = pageConfig[page];
 
-  const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, ...script.split('/')));
-  const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, ...style.split('/')));
+  const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', kind, 'index.js'));
+  const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', kind, 'index.css'));
 
   return `<!doctype html>
 <html lang="en">

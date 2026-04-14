@@ -2,7 +2,7 @@
   "name": "vscode-extension-template",
   "displayName": "VSCode Extension Template",
   "description": "TypeScript VS Code extension template (Node.js 22 + pnpm) with WebviewPanel and WebviewViewProvider.",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "publisher": "your-publisher",
   "packageManager": "pnpm@10.13.1",
   "engines": {
@@ -49,13 +49,15 @@
   },
   "scripts": {
     "compile": "pnpm run compile:ext && pnpm run compile:web",
-    "watch": "tsc -watch -p ./",
+    "watch": "concurrently \"pnpm run watch:ext\" \"pnpm run watch:web\"",
     "lint": "eslint \"extension/**/*.ts\"",
     "typecheck": "tsc --noEmit -p ./",
     "pretest": "pnpm run compile && pnpm run lint",
     "test": "node ./out/test/runTest.js",
     "compile:ext": "tsc -p ./",
-    "compile:web": "node ./scripts/build-web.mjs"
+    "compile:web": "node ./scripts/build-web.mjs",
+    "watch:ext": "tsc -watch -p ./",
+    "watch:web": "node ./scripts/build-web.mjs --watch"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.8",
@@ -65,6 +67,7 @@
     "@typescript-eslint/parser": "^8.29.1",
     "eslint": "^8.57.1",
     "typescript": "^5.9.2",
-    "esbuild": "^0.25.9"
+    "esbuild": "^0.25.9",
+    "concurrently": "^9.2.1"
   }
 }

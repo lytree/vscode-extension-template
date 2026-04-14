@@ -25,3 +25,9 @@ src/
 scripts/
   build-web.mjs
 ```
+
+
+## 调试提示
+
+- 首次运行前请执行 `pnpm run compile` 生成 `media/panel` 与 `media/view` 产物。
+- 使用 VSCode 的 `Run Extension (Watch)` 时会同时监听扩展 TS 与 Web 页面入口。
