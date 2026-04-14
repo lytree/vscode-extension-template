@@ -1,16 +1,15 @@
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import UnoCSS from 'unocss/vite';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
-  plugins: [react(), UnoCSS()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src')
+  build: {
+    outDir: 'media',
+    emptyOutDir: false,
+    manifest: true,
+    rollupOptions: {
+      input: {
+        panel: 'src/panel/main.ts',
+        view: 'src/view/main.ts'
+      }
     }
   }
 });
