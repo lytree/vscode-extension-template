@@ -1,15 +1,18 @@
-# VSCode Extension Template (TypeScript)
+# VSCode 插件模板（Node.js 22 + pnpm）
 
-这是一个可直接开始开发的 VSCode 插件模板。
+这是一个适用于 **Node.js 22 + pnpm** 的 VSCode 插件模板，并内置了 Webview 页面示例。
 
-## 功能
+## 设计约定
 
-- TypeScript 开发体验（严格模式）
-- 命令注册示例：`Template: Hello World`
-- 基础 ESLint 配置
-- 打包忽略配置（`.vscodeignore`）
-# Vite + React + TypeScript + UnoCSS + shadcn/ui 模板
+- `src/`：插件业务逻辑（命令、服务、面板等）
+- `webview/`：Webview 页面资源（HTML/CSS/JS）
 
+## 已内置能力
+
+- 命令：`Template: Open Webview`
+- Webview 与扩展端双向通信示例
+- TypeScript 严格模式
+- ESLint 基础配置
 
 ## 快速开始
 
@@ -18,42 +21,19 @@ pnpm install
 pnpm run compile
 ```
 
-然后在 VSCode 中：
-
-1. 打开该项目
-2. 按 `F5` 启动 Extension Development Host
-3. 在命令面板执行 `Template: Hello World`
-
-## 常用脚本
-
-- `pnpm run compile`：编译到 `out/`
-- `pnpm run watch`：监听编译
-- `pnpm run lint`：运行 ESLint
-- `pnpm run package`：打包前编译
-
-## 模板结构
-
-```txt
-src/
-  extension.ts
-  test/runTest.ts
-npm run dev
-```
-
-## 可用脚本
-
-- `pnpm run dev`：本地开发
-- `pnpm run build`：类型检查 + 生产构建
-- `pnpm run preview`：预览构建结果
-- `pnpm run typecheck`：TypeScript 类型检查
+在 VSCode 中按 `F5` 启动 Extension Development Host，执行 `Template: Open Webview`。
 
 ## 目录结构
 
 ```txt
 src/
-  components/ui/button.tsx
-  lib/utils.ts
-  App.tsx
-  main.tsx
-  styles.css
+  extension.ts
+  commands/registerOpenWebviewCommand.ts
+  panels/TemplatePanel.ts
+  services/messageService.ts
+  test/runTest.ts
+webview/
+  index.html
+  main.js
+  style.css
 ```

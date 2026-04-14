@@ -1,14 +1,8 @@
 import * as vscode from 'vscode';
+import { registerOpenWebviewCommand } from './commands/registerOpenWebviewCommand';
 
 export function activate(context: vscode.ExtensionContext) {
-  const disposable = vscode.commands.registerCommand(
-    'vscode-extension-template.helloWorld',
-    async () => {
-      await vscode.window.showInformationMessage('Hello from VSCode Extension Template!');
-    }
-  );
-
-  context.subscriptions.push(disposable);
+  registerOpenWebviewCommand(context);
 }
 
 export function deactivate() {
