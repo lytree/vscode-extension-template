@@ -4,11 +4,12 @@ import { registerOpenPanelCommand } from './commands/registerOpenPanelCommand';
 import { TemplateViewProvider } from './views/TemplateViewProvider';
 
 export function activate(context: vscode.ExtensionContext) {
+  vscode.window.showInformationMessage('Extension "vscode-extension-template" is now active!');
   registerHelloCommand(context);
   registerOpenPanelCommand(context);
 
   context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(TemplateViewProvider.viewType, new TemplateViewProvider(context.extensionUri))
+    vscode.window.registerWebviewViewProvider('template.webviewView', new TemplateViewProvider(context.extensionUri))
   );
 }
 

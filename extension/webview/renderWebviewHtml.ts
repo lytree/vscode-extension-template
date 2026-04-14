@@ -15,6 +15,7 @@ const ENTRY_KEY: Record<PageType, string> = {
 };
 
 export function renderWebviewHtml(webview: vscode.Webview, extensionUri: vscode.Uri, page: PageType): string {
+  vscode.window.showInformationMessage('TemplateViewProvider resolved!' + extensionUri.toString());
   const nonce = getNonce();
   const manifest = loadManifest(extensionUri);
   const entry = manifest[ENTRY_KEY[page]] as ManifestItem | undefined;

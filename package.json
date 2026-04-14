@@ -42,7 +42,9 @@
       "template-sidebar": [
         {
           "id": "template.webviewView",
+          "type": "webview",//改行必须有
           "name": "Template View"
+          
         }
       ]
     }

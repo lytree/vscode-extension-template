@@ -17,7 +17,7 @@ export class TemplatePanel {
       retainContextWhenHidden: true,
       localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')]
     });
-
+    
     TemplatePanel.currentPanel = new TemplatePanel(panel, extensionUri);
   }
 

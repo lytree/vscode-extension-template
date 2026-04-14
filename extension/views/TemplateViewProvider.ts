@@ -4,7 +4,9 @@ import { renderWebviewHtml } from '../webview/renderWebviewHtml';
 export class TemplateViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'template.webviewView';
 
-  constructor(private readonly extensionUri: vscode.Uri) {}
+  constructor(private readonly extensionUri: vscode.Uri) {
+    
+  }
 
   resolveWebviewView(webviewView: vscode.WebviewView): void {
     webviewView.webview.options = {
