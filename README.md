@@ -2,10 +2,10 @@
 
 这是一个适用于 **Node.js 22 + pnpm** 的 VSCode 插件模板，并内置了 Webview 页面示例。
 
-## 设计约定
+## 目录约定
 
-- `src/`：插件业务逻辑（命令、服务、面板等）
-- `webview/`：Webview 页面资源（HTML/CSS/JS）
+- `src/`：存放 Web 页面相关资源（HTML/CSS/JS）
+- `extension/`：存放所有 VSCode 相关逻辑（命令、面板、服务、测试）
 
 ## 已内置能力
 
@@ -26,18 +26,18 @@ pnpm run compile
 ## 目录结构
 
 ```txt
-src/
+extension/
   extension.ts
   commands/registerOpenWebviewCommand.ts
   panels/TemplatePanel.ts
   services/messageService.ts
   test/runTest.ts
-webview/
-  index.html
-  main.js
-  style.css
+src/
+  webviews/
+    index.html
+    main.js
+    style.css
 ```
-
 
 ## VSCode 调试配置
 
