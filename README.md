@@ -37,3 +37,17 @@ webview/
   main.js
   style.css
 ```
+
+
+## VSCode 调试配置
+
+已内置调试配置（见 `.vscode/launch.json` 与 `.vscode/tasks.json`）：
+
+- `Run Extension (Watch)`：启动前执行 `pnpm run watch`，适合日常开发。
+- `Run Extension (Compile Once)`：启动前仅编译一次，适合快速验证。
+
+调试步骤：
+
+1. 在 VSCode 打开项目。
+2. 切到 Run and Debug 面板，选择上述配置之一。
+3. 按 `F5` 启动 Extension Development Host。
