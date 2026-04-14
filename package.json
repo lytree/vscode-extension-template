@@ -1,8 +1,8 @@
 {
   "name": "vscode-extension-template",
   "displayName": "VSCode Extension Template",
-  "description": "TypeScript VS Code extension template (Node.js 22 + pnpm).",
-  "version": "0.3.1",
+  "description": "TypeScript VS Code extension template (Node.js 22 + pnpm) with WebviewPanel and WebviewViewProvider.",
+  "version": "0.4.0",
   "publisher": "your-publisher",
   "packageManager": "pnpm@10.13.1",
   "engines": {
@@ -13,7 +13,9 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:vscode-extension-template.helloWorld"
+    "onCommand:vscode-extension-template.helloWorld",
+    "onCommand:vscode-extension-template.openPanel",
+    "onView:template.webviewView"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -21,8 +23,29 @@
       {
         "command": "vscode-extension-template.helloWorld",
         "title": "Template: Hello World"
+      },
+      {
+        "command": "vscode-extension-template.openPanel",
+        "title": "Template: Open Webview Panel"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "template-sidebar",
+          "title": "Template",
+          "icon": "resources/template.svg"
+        }
+      ]
+    },
+    "views": {
+      "template-sidebar": [
+        {
+          "id": "template.webviewView",
+          "name": "Template View"
+        }
+      ]
+    }
   },
   "scripts": {
     "compile": "tsc -p ./",

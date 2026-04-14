@@ -1,38 +1,34 @@
 # VSCode 插件模板（Node.js 22 + pnpm）
 
-这是一个适用于 **Node.js 22 + pnpm** 的 VSCode 插件模板。
+模板包含两种 Webview 形态：
+
+- `WebviewPanel`
+- `WebviewViewProvider`
+
+两者共用同一套页面组件，仅在入口文件进行区分。
 
 ## 目录约定
 
-- `extension/`：存放所有 VSCode 相关逻辑（命令、服务、测试）
+- `extension/`：VSCode 相关逻辑（commands / panels / views）
+- `src/`：Web 页面资源
+  - `shared/`：共享组件与样式
+  - `entries/`：不同入口（panel / view）
 
-## 已内置能力
+## 命令与视图
 
-- 命令：`Template: Hello World`
-- TypeScript 严格模式
-- ESLint 基础配置
-
-## 快速开始
-
-```bash
-pnpm install
-pnpm run compile
-```
-
-在 VSCode 中按 `F5` 启动 Extension Development Host，执行 `Template: Hello World`。
+- `Template: Hello World`
+- `Template: Open Webview Panel`
+- Activity Bar 视图容器 `Template` 下提供 `Template View`
 
 ## 目录结构
 
 ```txt
 extension/
-  extension.ts
-  commands/registerHelloCommand.ts
-  test/runTest.ts
+  commands/
+  panels/
+  views/
+  webview/
+src/
+  shared/
+  entries/
 ```
-
-## VSCode 调试配置
-
-已内置调试配置（见 `.vscode/launch.json` 与 `.vscode/tasks.json`）：
-
-- `Run Extension (Watch)`：启动前执行 `pnpm run watch`，适合日常开发。
-- `Run Extension (Compile Once)`：启动前仅编译一次，适合快速验证。
