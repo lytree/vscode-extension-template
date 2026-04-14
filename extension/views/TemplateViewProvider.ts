@@ -9,7 +9,7 @@ export class TemplateViewProvider implements vscode.WebviewViewProvider {
   resolveWebviewView(webviewView: vscode.WebviewView): void {
     webviewView.webview.options = {
       enableScripts: true,
-      localResourceRoots: [vscode.Uri.joinPath(this.extensionUri, 'src')]
+      localResourceRoots: [vscode.Uri.joinPath(this.extensionUri, 'media')]
     };
 
     webviewView.webview.html = renderWebviewHtml(webviewView.webview, this.extensionUri, 'view');

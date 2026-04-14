@@ -1,34 +1,27 @@
 # VSCode 插件模板（Node.js 22 + pnpm）
 
-模板包含两种 Webview 形态：
+实现了 **WebviewPanel** 和 **WebviewViewProvider** 双形态页面，并满足：
 
-- `WebviewPanel`
-- `WebviewViewProvider`
+- Panel 与 View 使用**不同编译入口**
+- Panel 与 View 输出到**不同编译路径**
+- 仅共享组件库 / hooks，不共享页面
 
-两者共用同一套页面组件，仅在入口文件进行区分。
+## 编译产物
 
-## 目录约定
+- Panel: `media/panel/index.js` + `media/panel/index.css`
+- View: `media/view/index.js` + `media/view/index.css`
 
-- `extension/`：VSCode 相关逻辑（commands / panels / views）
-- `src/`：Web 页面资源
-  - `shared/`：共享组件与样式
-  - `entries/`：不同入口（panel / view）
-
-## 命令与视图
-
-- `Template: Hello World`
-- `Template: Open Webview Panel`
-- Activity Bar 视图容器 `Template` 下提供 `Template View`
-
-## 目录结构
+## 源码结构
 
 ```txt
 extension/
-  commands/
   panels/
   views/
   webview/
 src/
-  shared/
-  entries/
+  panel/      # Panel 页面与入口
+  view/       # View 页面与入口
+  shared/     # 共享组件与 hooks
+scripts/
+  build-web.mjs
 ```

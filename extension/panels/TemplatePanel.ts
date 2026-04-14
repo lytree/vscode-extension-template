@@ -15,7 +15,7 @@ export class TemplatePanel {
     const panel = vscode.window.createWebviewPanel('templateWebviewPanel', 'Template Panel', column, {
       enableScripts: true,
       retainContextWhenHidden: true,
-      localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'src')]
+      localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')]
     });
 
     TemplatePanel.currentPanel = new TemplatePanel(panel, extensionUri);
