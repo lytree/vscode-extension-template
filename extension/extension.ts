@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
-import { registerOpenWebviewCommand } from './commands/registerOpenWebviewCommand';
+import { registerHelloCommand } from './commands/registerHelloCommand';
 
 export function activate(context: vscode.ExtensionContext) {
-  registerOpenWebviewCommand(context);
+  registerHelloCommand(context);
 }
 
 export function deactivate() {

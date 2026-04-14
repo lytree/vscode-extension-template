@@ -1,16 +1,14 @@
 # VSCode 插件模板（Node.js 22 + pnpm）
 
-这是一个适用于 **Node.js 22 + pnpm** 的 VSCode 插件模板，并内置了 Webview 页面示例。
+这是一个适用于 **Node.js 22 + pnpm** 的 VSCode 插件模板。
 
 ## 目录约定
 
-- `src/`：存放 Web 页面相关资源（HTML/CSS/JS）
-- `extension/`：存放所有 VSCode 相关逻辑（命令、面板、服务、测试）
+- `extension/`：存放所有 VSCode 相关逻辑（命令、服务、测试）
 
 ## 已内置能力
 
-- 命令：`Template: Open Webview`
-- Webview 与扩展端双向通信示例
+- 命令：`Template: Hello World`
 - TypeScript 严格模式
 - ESLint 基础配置
 
@@ -21,22 +19,15 @@ pnpm install
 pnpm run compile
 ```
 
-在 VSCode 中按 `F5` 启动 Extension Development Host，执行 `Template: Open Webview`。
+在 VSCode 中按 `F5` 启动 Extension Development Host，执行 `Template: Hello World`。
 
 ## 目录结构
 
 ```txt
 extension/
   extension.ts
-  commands/registerOpenWebviewCommand.ts
-  panels/TemplatePanel.ts
-  services/messageService.ts
+  commands/registerHelloCommand.ts
   test/runTest.ts
-src/
-  webviews/
-    index.html
-    main.js
-    style.css
 ```
 
 ## VSCode 调试配置
@@ -45,9 +36,3 @@ src/
 
 - `Run Extension (Watch)`：启动前执行 `pnpm run watch`，适合日常开发。
 - `Run Extension (Compile Once)`：启动前仅编译一次，适合快速验证。
-
-调试步骤：
-
-1. 在 VSCode 打开项目。
-2. 切到 Run and Debug 面板，选择上述配置之一。
-3. 按 `F5` 启动 Extension Development Host。

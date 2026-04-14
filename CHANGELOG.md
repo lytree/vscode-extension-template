@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.1
+
+- Removed webview-related directory and assets.
+- Simplified template to command-based extension skeleton.
+
 ## 0.3.0
 
 - Updated project layout:
