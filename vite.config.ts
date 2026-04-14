@@ -15,8 +15,8 @@ export default defineConfig({
     manifest: true,
     rollupOptions: {
       input: {
-        panel: 'src/panel/main.ts',
-        view: 'src/view/main.ts'
+        panel: 'src/panel/main.tsx',
+        view: 'src/view/main.tsx'
       },
       output: {
         entryFileNames: '[name].js',
@@ -36,7 +36,7 @@ export default defineConfig({
           ) {
             return 'fonts/[name].[hash].[ext]' // 字体文件输出路径及命名规则
           }
-          return '[ext]/name1-[hash].[ext]' // 其他资源文件输出路径及命名规则
+          return '[ext]/[name]-[hash].[ext]' // 其他资源文件输出路径及命名规则
         }
       }
     }

@@ -10,16 +10,15 @@ type ManifestItem = {
 };
 
 const ENTRY_KEY: Record<PageType, string> = {
-  panel: 'src/panel/main.ts',
-  view: 'src/view/main.ts'
+  panel: 'src/panel/main.tsx',
+  view: 'src/view/main.tsx'
 };
 
 export function renderWebviewHtml(webview: vscode.Webview, extensionUri: vscode.Uri, page: PageType): string {
-  vscode.window.showInformationMessage('TemplateViewProvider resolved!' + extensionUri.toString());
+
   const nonce = getNonce();
   const manifest = loadManifest(extensionUri);
   const entry = manifest[ENTRY_KEY[page]] as ManifestItem | undefined;
-
   if (!entry) {
     throw new Error(`Missing Vite manifest entry for ${ENTRY_KEY[page]}. Please run: pnpm run compile:web`);
   }
@@ -27,21 +26,24 @@ export function renderWebviewHtml(webview: vscode.Webview, extensionUri: vscode.
   const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', entry.file));
   const cssFile = entry.css?.[0];
   const styleUri = cssFile ? webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', cssFile)) : undefined;
-
-  return `<!doctype html>
+  var s =
+    `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';" />
     ${styleUri ? `<link rel="stylesheet" href="${styleUri}" />` : ''}
-    <title>${page === 'panel' ? 'Webview Panel' : 'Webview View'}</title>
   </head>
   <body>
-    <div id="app"></div>
-    <script nonce="${nonce}" src="${scriptUri}"></script>
+    <div id="root"></div>
+    <script type="module" nonce="${nonce}" src="${scriptUri}"></script>
   </body>
 </html>`;
+
+
+
+  return s;
 }
 
 function loadManifest(extensionUri: vscode.Uri): Record<string, unknown> {

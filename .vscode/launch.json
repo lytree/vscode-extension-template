@@ -11,7 +11,7 @@
       "outFiles": [
         "${workspaceFolder}/out/**/*.js"
       ],
-      "preLaunchTask": "pnpm: watch"
+      // "preLaunchTask": "pnpm: watch"
     },
     {
       "name": "Run Extension (Compile Once)",

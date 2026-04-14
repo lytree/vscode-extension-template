@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { renderWebviewHtml } from '../webview/renderWebviewHtml';
+import { renderWebviewHtml } from '../webview/renderWebviewHtml.js';
 
 export class TemplatePanel {
   public static currentPanel: TemplatePanel | undefined;
