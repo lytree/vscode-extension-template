@@ -2,7 +2,7 @@
   "name": "vscode-extension-template",
   "displayName": "VSCode Extension Template",
   "description": "TypeScript VS Code extension template (Node.js 22 + pnpm) with WebviewPanel and WebviewViewProvider.",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "publisher": "your-publisher",
   "packageManager": "pnpm@10.13.1",
   "engines": {
@@ -48,16 +48,21 @@
     }
   },
   "scripts": {
-    "compile": "pnpm run compile:ext && pnpm run compile:web",
+    "clean": "node -e \"require('node:fs').rmSync('out', { recursive: true, force: true }); require('node:fs').rmSync('media', { recursive: true, force: true });\"",
+    "compile": "pnpm run clean && pnpm run compile:ext && pnpm run compile:web",
+    "build": "pnpm run compile",
+    "compile:ext": "tsc -p ./",
+    "compile:web": "vite build --config vite.config.ts",
     "watch": "concurrently \"pnpm run watch:ext\" \"pnpm run watch:web\"",
+    "dev": "pnpm run watch",
+    "watch:ext": "tsc -watch -p ./",
+    "watch:web": "vite build --watch --config vite.config.ts",
     "lint": "eslint \"extension/**/*.ts\"",
     "typecheck": "tsc --noEmit -p ./",
+    "check": "pnpm run lint && pnpm run typecheck",
     "pretest": "pnpm run compile && pnpm run lint",
     "test": "node ./out/test/runTest.js",
-    "compile:ext": "tsc -p ./",
-    "compile:web": "vite build",
-    "watch:ext": "tsc -watch -p ./",
-    "watch:web": "vite build --watch"
+    "package": "pnpm run compile"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.8",

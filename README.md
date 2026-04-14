@@ -32,3 +32,12 @@ src/
   shared/
 vite.config.ts
 ```
+
+
+## Scripts
+
+- `pnpm run clean`
+- `pnpm run compile` / `pnpm run build`
+- `pnpm run watch` / `pnpm run dev`
+- `pnpm run check`
+- `pnpm run package`
