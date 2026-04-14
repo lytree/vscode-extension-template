@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.tsbuildinfo
+*.d.ts
+*.js
+!vite.config.ts
+!uno.config.ts
