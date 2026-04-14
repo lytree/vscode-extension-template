@@ -2,7 +2,9 @@
   "compilerOptions": {
     "module": "Node16",
     "target": "ES2022",
-    "lib": ["ES2022"],
+    "lib": [
+      "ES2022"
+    ],
     "outDir": "out",
     "rootDir": "extension",
     "sourceMap": true,
@@ -10,7 +12,18 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "moduleResolution": "Node16",
-    "types": ["node", "vscode", "mocha"]
+    "types": [
+      "node",
+      "vscode",
+      "mocha"
+    ],
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
   },
-  "include": ["extension/**/*.ts"]
+  "include": [
+    "extension/**/*.ts"
+  ]
 }

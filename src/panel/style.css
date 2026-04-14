@@ -1,5 +1,0 @@
-:root { color-scheme: light dark; }
-body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-.layout { padding: 12px; display: grid; gap: 10px; }
-.card { border: 1px solid #8885; border-radius: 8px; padding: 10px; }
-button { width: fit-content; }

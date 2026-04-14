@@ -1,4 +1,4 @@
-import './style.css';
+import '@/style.css';
 import { mountViewPage } from './page';
 
 const root = document.getElementById('app');
