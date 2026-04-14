@@ -8,12 +8,14 @@
 - 命令注册示例：`Template: Hello World`
 - 基础 ESLint 配置
 - 打包忽略配置（`.vscodeignore`）
+# Vite + React + TypeScript + UnoCSS + shadcn/ui 模板
+
 
 ## 快速开始
 
 ```bash
-npm install
-npm run compile
+pnpm install
+pnpm run compile
 ```
 
 然后在 VSCode 中：
@@ -24,10 +26,10 @@ npm run compile
 
 ## 常用脚本
 
-- `npm run compile`：编译到 `out/`
-- `npm run watch`：监听编译
-- `npm run lint`：运行 ESLint
-- `npm run package`：打包前编译
+- `pnpm run compile`：编译到 `out/`
+- `pnpm run watch`：监听编译
+- `pnpm run lint`：运行 ESLint
+- `pnpm run package`：打包前编译
 
 ## 模板结构
 
@@ -35,4 +37,23 @@ npm run compile
 src/
   extension.ts
   test/runTest.ts
+npm run dev
+```
+
+## 可用脚本
+
+- `pnpm run dev`：本地开发
+- `pnpm run build`：类型检查 + 生产构建
+- `pnpm run preview`：预览构建结果
+- `pnpm run typecheck`：TypeScript 类型检查
+
+## 目录结构
+
+```txt
+src/
+  components/ui/button.tsx
+  lib/utils.ts
+  App.tsx
+  main.tsx
+  styles.css
 ```
