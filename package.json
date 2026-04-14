@@ -1,0 +1,44 @@
+{
+  "name": "vscode-extension-template",
+  "displayName": "VSCode Extension Template",
+  "description": "TypeScript VS Code extension template (Node.js 22 + pnpm) with a built-in Webview page.",
+  "version": "0.2.0",
+  "publisher": "your-publisher",
+  "packageManager": "pnpm@10.13.1",
+  "engines": {
+    "vscode": "^1.95.0",
+    "node": ">=22.0.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:vscode-extension-template.openWebview"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vscode-extension-template.openWebview",
+        "title": "Template: Open Webview"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint \"src/**/*.ts\"",
+    "typecheck": "tsc --noEmit -p ./",
+    "pretest": "pnpm run compile && pnpm run lint",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.8",
+    "@types/node": "^22.15.18",
+    "@types/vscode": "^1.95.0",
+    "@typescript-eslint/eslint-plugin": "^8.29.1",
+    "@typescript-eslint/parser": "^8.29.1",
+    "eslint": "^8.57.1",
+    "typescript": "^5.9.2"
+  }
+}
