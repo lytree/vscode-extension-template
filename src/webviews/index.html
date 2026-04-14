@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src __CSP_SOURCE__; script-src 'nonce-__NONCE__';" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="__STYLE_URI__" />
+    <title>Extension Webview</title>
+  </head>
+  <body>
+    <main class="container">
+      <h1>VSCode 插件 Webview 模板</h1>
+      <p>页面代码放在 <code>src/webviews/</code>，插件业务逻辑放在 <code>extension/</code>。</p>
+
+      <label for="nameInput">输入你的名字：</label>
+      <input id="nameInput" type="text" placeholder="例如：Codex" />
+      <button id="helloBtn">发送到扩展端</button>
+
+      <pre id="result">等待消息...</pre>
+    </main>
+
+    <script nonce="__NONCE__" src="__SCRIPT_URI__"></script>
+  </body>
+</html>
