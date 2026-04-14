@@ -1,0 +1,44 @@
+{
+  "name": "vscode-extension-template",
+  "displayName": "VSCode Extension Template",
+  "description": "TypeScript VS Code extension template (Node.js 22 + pnpm).",
+  "version": "0.3.1",
+  "publisher": "your-publisher",
+  "packageManager": "pnpm@10.13.1",
+  "engines": {
+    "vscode": "^1.95.0",
+    "node": ">=22.0.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:vscode-extension-template.helloWorld"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vscode-extension-template.helloWorld",
+        "title": "Template: Hello World"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint \"extension/**/*.ts\"",
+    "typecheck": "tsc --noEmit -p ./",
+    "pretest": "pnpm run compile && pnpm run lint",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.8",
+    "@types/node": "^22.15.18",
+    "@types/vscode": "^1.95.0",
+    "@typescript-eslint/eslint-plugin": "^8.29.1",
+    "@typescript-eslint/parser": "^8.29.1",
+    "eslint": "^8.57.1",
+    "typescript": "^5.9.2"
+  }
+}
