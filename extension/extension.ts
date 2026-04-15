@@ -5,6 +5,7 @@ import { TemplateViewProvider } from './views/TemplateViewProvider.js';
 import { webview } from './utils/webview.js';
 import WebviewHandle from './api/webviewHandle.js';
 
+const fenbiChannel = vscode.window.createOutputChannel("Fenbi Tools", { log: true });
 export function activate(context: vscode.ExtensionContext) {
   vscode.window.showInformationMessage('Extension "vscode-extension-template" is now active!');
   registerHelloCommand(context);
@@ -38,7 +39,7 @@ class ViewWebviewProvider implements vscode.WebviewViewProvider {
   async resolveWebviewView(webviewView: vscode.WebviewView) {
     webview.createSideInit(webviewView, this._context.extensionPath);
 
-    new WebviewHandle().onDidReceiveMessage();
+    new WebviewHandle(fenbiChannel).onDidReceiveMessage();
   }
 }
 

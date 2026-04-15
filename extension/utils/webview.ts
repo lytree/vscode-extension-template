@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { templateHtml } from "./func.js";
-const path = require("path");
+import path from "path";
 
 export class Webview {
   panel: any;

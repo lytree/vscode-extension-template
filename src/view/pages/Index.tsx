@@ -26,28 +26,40 @@ export const Home = () => {
   React.useEffect(() => {
     pageInit({ categoryId: setting.categoryId });
     getHistory({ count: 15, categoryId: 4 });
-    window.addEventListener("message", (event: any) => {
+    // 2. 定义处理函数（方便移除）
+    const handleMessage = (event: MessageEvent) => {
       const message = event.data;
       setLoading(false);
 
-      if (message.command === "setting") setTheme(message.data);
-      if (message.command === "init") {
-        const menu = message.data.menu;
-        const cacheResult = message.data.cacheResult;
-        const _data = modifyArrayToTree(menu, cacheResult || {}, treeClick);
-        setTreeData(_data as any);
+      switch (message.command) {
+        case "setting":
+          setTheme(message.data);
+          break;
+        case "init":
+          const { menu, cacheResult } = message.data;
+          const _data = modifyArrayToTree(menu, cacheResult || {}, treeClick);
+          setTreeData(_data as any);
+          break;
+        case "pageCache":
+          setCacheData(message.data);
+          break;
+        case "message":
+          // 注意：这里的 setting.categoryId 可能是旧值
+          pageInit({ categoryId: setting.categoryId });
+          alert(message.data.message);
+          break;
+        case "history":
+          setHistoryList(message.data);
+          break;
       }
-      if (message.command === "pageCache") {
-        setCacheData(message.data);
-      }
-      if (message.command === "message") {
-        pageInit({ categoryId: setting.categoryId });
-        alert(message.data.message);
-      }
-      if (message.command === "history") {
-        setHistoryList(message.data);
-      }
-    });
+    };
+    // 3. 绑定监听
+    window.addEventListener("message", handleMessage);
+
+    // 4. 重要：销毁监听，防止内存泄漏
+    return () => {
+      window.removeEventListener("message", handleMessage);
+    };
   }, []);
 
   const setTheme = (theme: TSetting) => {
@@ -160,7 +172,7 @@ export const Home = () => {
     <div>
       {loading ? (
         <div className="flex justify-center items-center h-32">
-          <div className="text-sm text-gray-400">loading...</div>
+          <div className="text-sm text-gray-400">Index loading...</div>
         </div>
       ) : (
         <div>

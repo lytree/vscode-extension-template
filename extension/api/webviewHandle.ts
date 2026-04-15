@@ -19,10 +19,15 @@ import {
 import { webview } from "../utils/webview.js";
 
 export default class WebviewHandle {
+  private fenbiChannel: vscode.OutputChannel;
+
+  constructor(fenbiChannel: vscode.OutputChannel) {
+    this.fenbiChannel = fenbiChannel;
+  }
   onDidReceiveMessage() {
     webview.onDidReceiveMessage((message: { [key: string]: any }) => {
       const { postData = {}, command = "" } = message || {};
-
+      this.fenbiChannel.appendLine(`Received message: ${command} with data: ${JSON.stringify(postData)}`);
       if (command === "pageInit") this.pageInit(postData);
       if (command === "changeCategory") this.changeCategory(postData);
       if (command === "getQuestion") this.getQuestion(postData);
