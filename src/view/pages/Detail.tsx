@@ -1,13 +1,12 @@
 import * as React from "react";
-import { TSolutionData, TSetting } from "../types/index.js";
-import { QuestionItem } from "../components/question-item.js";
-import { ShenlunItem } from "../components/shenlun-item.js";
-import { CanvasDrawing } from "../components/canvas-drawing.js";
-import { useSetting } from "../components/hooks.js";
-import { getVscodeApi } from "../utils/vscodeApi.js";
-import { Button } from "@/components/ui/button";
+import type { TSolutionData, TSetting } from "../types";
+import { QuestionItem } from "../components/question-item";
+import { ShenlunItem } from "../components/shenlun-item";
+import { CanvasDrawing } from "../components/canvas-drawing";
+import { useSetting } from "../components/hooks";
+import { getVscodeApi } from "../utils/vscodeApi";
+import { Button } from "../../components/ui/button";
 
-import "../style/detail.css";
 
 export const Detail: React.FC = () => {
   const { setting } = useSetting();
@@ -53,8 +52,10 @@ export const Detail: React.FC = () => {
         {data.questions.map((question) => (
           <div key={question.id} className="question-item">
             {question.type === 210 ? (
+              //@ts-ignore
               <ShenlunItem question={question} solution={data.solutions.find((s) => s.id === question.id)} />
             ) : (
+              //@ts-ignore
               <QuestionItem question={question} solution={data.solutions.find((s) => s.id === question.id)} />
             )}
           </div>

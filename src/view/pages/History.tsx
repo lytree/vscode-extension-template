@@ -3,7 +3,7 @@ import { HistoryItem } from "../components/history-item";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSetting } from "../components/hooks";
 import { getVscodeApi } from "../utils/vscodeApi";
-import { Button } from "@/components/ui/button";
+import { Button } from "../../components/ui/button";
 
 const vscode = getVscodeApi();
 

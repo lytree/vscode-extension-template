@@ -1,5 +1,5 @@
 import * as React from "react";
-import { TMaterials, TQuestionItem, TSolutionItem } from "../types";
+import type { TMaterials, TQuestionItem, TSolutionItem } from "../types";
 import { radioMap } from "../utils/constant";
 import { setImg } from "../utils/setImg";
 import { useSetting } from "../components/hooks";
@@ -11,7 +11,7 @@ interface TQuestionItemProps {
   data: TSolutionItem[];
   materials: TMaterials[];
   index: number;
-  onChange: (e: RadioChangeEvent, item: TSolutionItem, index: number) => void;
+  onChange: (e: any, item: TSolutionItem, index: number) => void;
 }
 export const QuestionItem = (props: TQuestionItemProps) => {
   const { data = [], materials = [], onChange, index } = props;

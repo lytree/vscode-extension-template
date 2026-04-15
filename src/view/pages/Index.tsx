@@ -1,15 +1,15 @@
 import * as React from "react";
-import { TCacheData, TSetting } from "../types/index.js";
-import { QuestionCount } from "../components/question-count.js";
-import { CustomTree } from "../components/custom-tree.js";
-import { HistoryCard } from "../components/history-card.js";
+import type { TCacheData, TSetting } from "../types";
+import { QuestionCount } from "../components/question-count";
+import { CustomTree } from "../components/custom-tree";
+import { HistoryCard } from "../components/history-card";
 import { useNavigate } from "react-router-dom";
-import { useSetting } from "../components/hooks.js";
-import { categoryOptions } from "../utils/constant.js";
-import { getVscodeApi } from "../utils/vscodeApi.js";
-import { modifyArrayToTree } from "../utils/modifyArray.tsx";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useSetting } from "../components/hooks";
+import { categoryOptions } from "../utils/constant";
+import { getVscodeApi } from "../utils/vscodeApi";
+import { modifyArrayToTree } from "../utils/modifyArray";
+import { Button } from "../../components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 
 const vscode = getVscodeApi();
 
@@ -154,7 +154,8 @@ export const Home = () => {
     });
   };
 
-  const onChangeCategory = (value: string) => {
+  const onChangeCategory = (value: string | null, _eventDetails?: any) => {
+    if (!value) return;
     pageInit({
       categoryId: value,
     });
@@ -221,12 +222,11 @@ export const Home = () => {
           <Select
             value={setting.categoryId || "xingce"}
             onValueChange={onChangeCategory}
-            className="w-32 m-2.5"
           >
-            <SelectTrigger>
+            <SelectTrigger className="w-32 m-2.5">
               <SelectValue placeholder="选择类别" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="w-32 m-2.5">
               {categoryOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}

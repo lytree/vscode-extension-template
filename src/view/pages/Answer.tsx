@@ -1,6 +1,6 @@
 import * as React from "react";
 import { groupByMaterialIndexesTo2DArray } from "../utils/analyze";
-import {
+import type {
   TCacheData,
   TQuestionData,
   TQuestionItem,
@@ -13,8 +13,7 @@ import { useSetting } from "../components/hooks";
 import { getVscodeApi } from "../utils/vscodeApi";
 import { ShenlunItem } from "../components/shenlun-item";
 
-import "../style/detail.css";
-import { Button } from "@/components/ui/button";
+import { Button } from "../../components/ui/button";
 
 interface TLastAnswerRecord {
   lastCount: number | null;

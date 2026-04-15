@@ -24,8 +24,8 @@ export function renderWebviewHtml(webview: vscode.Webview, extensionUri: vscode.
     throw new Error(`Missing Vite manifest entry for ${ENTRY_KEY[page]}. Please run: pnpm run compile:web`);
   }
   const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', entry.file));
-  const cssFile = entry.css?.[0];
-  const styleUri = cssFile ? webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', cssFile)) : undefined;
+  const cssFiles = entry.css || [];
+  const styleUris = cssFiles.map(cssFile => webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', cssFile)));
 
 
 
@@ -35,7 +35,7 @@ export function renderWebviewHtml(webview: vscode.Webview, extensionUri: vscode.
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';" />
-    ${styleUri ? `<link rel="stylesheet" href="${styleUri}" />` : ''}
+    ${styleUris.map(uri => `<link rel="stylesheet" href="${uri}" />`).join('\n    ')}
   </head>
   <body>
     <div id="root"></div>
