@@ -1,5 +1,4 @@
 import * as React from "react";
-import { Spin, Modal, message, Select, Button, Flex } from "antd";
 import { TCacheData, TSetting } from "../types";
 import { QuestionCount } from "../components/question-count";
 import { CustomTree } from "../components/custom-tree";
@@ -9,12 +8,12 @@ import { useSetting } from "../components/hooks";
 import { categoryOptions } from "../utils/constant";
 import { getVscodeApi } from "../utils/vscodeApi";
 import { modifyArrayToTree } from "../utils/modifyArray";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const vscode = getVscodeApi();
 
 export const Home = () => {
-  const [modal, contextHolder] = Modal.useModal();
-  const [messageApi, messageHoder] = message.useMessage();
   const [historyList, setHistoryList] = React.useState<any>([]);
   const [loading, setLoading] = React.useState(true);
 
@@ -43,7 +42,7 @@ export const Home = () => {
       }
       if (message.command === "message") {
         pageInit({ categoryId: setting.categoryId });
-        messageApi.info(message.data.message);
+        alert(message.data.message);
       }
       if (message.command === "history") {
         setHistoryList(message.data);
@@ -143,29 +142,32 @@ export const Home = () => {
     });
   };
 
-  const onChangeCategory = (e: string) => {
+  const onChangeCategory = (value: string) => {
     pageInit({
-      categoryId: e,
+      categoryId: value,
     });
     vscode.postMessage({
       command: "changeCategory",
       postData: {
-        categoryId: e,
+        categoryId: value,
       },
     });
-    getHistory({ count: 15, categoryId: 4, category: e });
-    setSetting((prev: any) => ({ ...prev, categoryId: e }));
+    getHistory({ count: 15, categoryId: 4, category: value });
+    setSetting((prev: any) => ({ ...prev, categoryId: value }));
   };
 
   return (
     <div>
-      <Spin tip="loading..." spinning={loading}>
+      {loading ? (
+        <div className="flex justify-center items-center h-32">
+          <div className="text-sm text-gray-400">loading...</div>
+        </div>
+      ) : (
         <div>
-          <Flex justify="flex-end" align="center">
+          <div className="flex justify-end items-center gap-4">
             <Button
-              type="link"
-              size="small"
-              style={{ borderColor: "white" }}
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 vscode.postMessage({
                   command: "openInBrowser",
@@ -178,9 +180,8 @@ export const Home = () => {
               问题反馈
             </Button>
             <Button
-              type="link"
-              size="small"
-              style={{ borderColor: "white" }}
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 vscode.postMessage({
                   command: "openInBrowser",
@@ -192,11 +193,10 @@ export const Home = () => {
             >
               入群交流
             </Button>
-          </Flex>
-          <Flex justify="flex-start" align="center">
+          </div>
+          <div className="flex justify-start items-center mb-4">
             <Button
-              type="link"
-              style={{ borderColor: "white" }}
+              variant="ghost"
               onClick={() => {
                 goDetail({
                   type: 2,
@@ -205,15 +205,25 @@ export const Home = () => {
             >
               快速练习
             </Button>
-          </Flex>
+          </div>
           <Select
-            options={categoryOptions}
             value={setting.categoryId || "xingce"}
-            style={{ width: 120, margin: "10px" }}
-            onChange={onChangeCategory}
-          />
+            onValueChange={onChangeCategory}
+            className="w-32 m-2.5"
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="选择类别" />
+            </SelectTrigger>
+            <SelectContent>
+              {categoryOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           {setting.categoryId == "shenlun" && (
-            <div>
+            <div className="text-sm text-gray-400 mb-4">
               ps：申论功能需要前往粉笔官网充vip才能交卷，与该插件无关，由于没有vip，交卷及后续功能暂无法支持，感谢理解！
             </div>
           )}
@@ -232,9 +242,7 @@ export const Home = () => {
             <CustomTree treeData={treeData} />
           </div>
         </div>
-      </Spin>
-
-      {contextHolder}
+      )}
     </div>
   );
 };

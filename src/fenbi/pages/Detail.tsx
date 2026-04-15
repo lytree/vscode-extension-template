@@ -1,6 +1,6 @@
 import * as React from "react";
-import { Button, Space, Spin, Modal, message } from "antd";
 import { groupByMaterialIndexesTo2DArray } from "../utils/analyze";
+import { Button } from "@/components/ui/button";
 import {
   TCacheData,
   TQuestionData,
@@ -26,7 +26,6 @@ interface TLastAnswerRecord {
 const vscode = getVscodeApi();
 let modalIs = false;
 export const Detail = () => {
-  const [modal, contextHolder] = Modal.useModal();
   const [isFirst, setFirst] = React.useState(false);
   const [startTime, setStartTime] = React.useState(0);
   const [lastAnswerRecord, setLastAnswerRecord] =
@@ -65,14 +64,11 @@ export const Detail = () => {
       }
       if (_message.command === "message") {
         if (modalIs) return;
-        modal.error({
-          title: "提示",
-          content: _message.data.message,
-          onOk: () => {
-            modalIs = false;
-          },
-        });
+        alert(_message.data.message);
         modalIs = true;
+        setTimeout(() => {
+          modalIs = false;
+        }, 1000);
       }
       if (_message.command === "solution") {
         setPage(2);
@@ -147,20 +143,17 @@ export const Detail = () => {
   };
 
   const onSubmit = () => {
-    modal.confirm({
-      title: "确认提交",
-      onOk: () => {
-        setLoading(true);
-        vscode.postMessage({
-          command: "submit",
-          postData: {
-            startTime: startTime,
-            combineKey: combineKey,
-            category: setting.categoryId,
-          },
-        });
-      },
-    });
+    if (confirm("确认提交？")) {
+      setLoading(true);
+      vscode.postMessage({
+        command: "submit",
+        postData: {
+          startTime: startTime,
+          combineKey: combineKey,
+          category: setting.categoryId,
+        },
+      });
+    }
   };
 
   const questions = groupByMaterialIndexesTo2DArray(
@@ -190,10 +183,14 @@ export const Detail = () => {
 
   return (
     <div className="detail_page">
-      <Spin tip="loading..." spinning={loading}>
+      {loading ? (
+        <div className="flex justify-center items-center h-32">
+          <div className="text-sm text-gray-400">loading...</div>
+        </div>
+      ) : (
         <div className="question-container">
           <div className="top-bar">
-            <Button type="text" onClick={onBack}>
+            <Button variant="ghost" onClick={onBack}>
               返回上一页
             </Button>
             {page == 1 && (
