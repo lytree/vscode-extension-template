@@ -30,22 +30,6 @@ export const getScriptPath = (extensionPath: string) => {
   return scriptPath;
 };
 
-export const templateHtml = (scriptUri: any) => {
-  return `<!DOCTYPE html>
-  <html lang="en">
-    <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>详情</title>
-    </head>
-    <body>
-      <div id="loading">页面初始化中...</div>
-      <div id="root"></div>
-      <script src=${scriptUri}></script>
-    </body>
-  </html>`;
-};
-
 export const getScriptUri = (
   webview: vscode.WebviewView,
   scriptPath: vscode.Uri

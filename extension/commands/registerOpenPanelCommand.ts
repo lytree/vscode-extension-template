@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 import { TemplatePanel } from '../panels/TemplatePanel.js';
 
-export function registerOpenPanelCommand(context: vscode.ExtensionContext) {
+export function registerOpenPanelCommand(context: vscode.ExtensionContext, fenbiChannel: vscode.LogOutputChannel) {
   const disposable = vscode.commands.registerCommand('vscode-extension-template.openPanel', () => {
-    TemplatePanel.createOrShow(context.extensionUri);
+    TemplatePanel.createOrShow(context.extensionUri, fenbiChannel);
   });
 
   context.subscriptions.push(disposable);

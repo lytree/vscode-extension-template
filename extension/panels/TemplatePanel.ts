@@ -3,8 +3,8 @@ import { renderWebviewHtml } from '../webview/renderWebviewHtml.js';
 
 export class TemplatePanel {
   public static currentPanel: TemplatePanel | undefined;
-
-  public static createOrShow(extensionUri: vscode.Uri) {
+  private  fenbiChannel: vscode.OutputChannel;
+  public static createOrShow(extensionUri: vscode.Uri, fenbiChannel: vscode.OutputChannel) {
     const column = vscode.window.activeTextEditor?.viewColumn ?? vscode.ViewColumn.One;
 
     if (TemplatePanel.currentPanel) {
@@ -18,12 +18,12 @@ export class TemplatePanel {
       localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')]
     });
     
-    TemplatePanel.currentPanel = new TemplatePanel(panel, extensionUri);
+    TemplatePanel.currentPanel = new TemplatePanel(panel, extensionUri, fenbiChannel);
   }
 
-  private constructor(private readonly panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
-    this.panel.webview.html = renderWebviewHtml(this.panel.webview, extensionUri, 'panel');
-
+  private constructor(private readonly panel: vscode.WebviewPanel, extensionUri: vscode.Uri, fenbiChannel: vscode.OutputChannel) {
+    this.panel.webview.html = renderWebviewHtml(this.panel.webview, extensionUri, 'panel',fenbiChannel);
+    this.fenbiChannel = fenbiChannel;
     this.panel.onDidDispose(() => {
       TemplatePanel.currentPanel = undefined;
     });

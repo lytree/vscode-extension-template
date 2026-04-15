@@ -14,20 +14,22 @@ const ENTRY_KEY: Record<PageType, string> = {
   view: 'src/view/main.tsx'
 };
 
-export function renderWebviewHtml(webview: vscode.Webview, extensionUri: vscode.Uri, page: PageType): string {
+export function renderWebviewHtml(webview: vscode.Webview, extensionUri: vscode.Uri, page: PageType, fenbiChannel: vscode.OutputChannel): string {
 
   const nonce = getNonce();
   const manifest = loadManifest(extensionUri);
   const entry = manifest[ENTRY_KEY[page]] as ManifestItem | undefined;
   if (!entry) {
+    fenbiChannel.appendLine(`Missing Vite manifest entry for ${ENTRY_KEY[page]}. Please run: pnpm run compile:web`);
     throw new Error(`Missing Vite manifest entry for ${ENTRY_KEY[page]}. Please run: pnpm run compile:web`);
   }
-
   const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', entry.file));
   const cssFile = entry.css?.[0];
   const styleUri = cssFile ? webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', cssFile)) : undefined;
-  var s =
-    `<!doctype html>
+
+
+
+  return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -40,10 +42,6 @@ export function renderWebviewHtml(webview: vscode.Webview, extensionUri: vscode.
     <script type="module" nonce="${nonce}" src="${scriptUri}"></script>
   </body>
 </html>`;
-
-
-
-  return s;
 }
 
 function loadManifest(extensionUri: vscode.Uri): Record<string, unknown> {

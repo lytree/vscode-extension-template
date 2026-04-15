@@ -1,29 +1,28 @@
 import * as vscode from "vscode";
-import { templateHtml } from "./func.js";
 import path from "path";
 
 export class Webview {
   panel: any;
 
-  setWebviewHtml(extensionPath: string) {
-    const scriptPath = vscode.Uri.file(
-      path.join(extensionPath, "media", "view.js")
-    );
+  // setWebviewHtml(extensionPath: string) {
+  //   const scriptPath = vscode.Uri.file(
+  //     path.join(extensionPath, "media", "view.js")
+  //   );
 
-    const scriptUri = this.panel.webview.asWebviewUri(scriptPath);
-    this.panel.webview.html = templateHtml(scriptUri);
-  }
+  //   const scriptUri = this.panel.webview.asWebviewUri(scriptPath);
+  //   this.panel.webview.html = templateHtml(scriptUri);
+  // }
 
-  createSideInit(webviewView: vscode.WebviewView, extensionPath: string) {
-    this.panel = webviewView;
-    webviewView.webview.options = {
-      enableScripts: true,
-    };
+  // createSideInit(webviewView: vscode.WebviewView, extensionPath: string) {
+  //   this.panel = webviewView;
+  //   webviewView.webview.options = {
+  //     enableScripts: true,
+  //   };
 
-    this.setWebviewHtml(extensionPath);
+  //   this.setWebviewHtml(extensionPath);
 
-    return webviewView;
-  }
+  //   return webviewView;
+  // }
 
   onDidChangeVisibility(callback: () => void) {
     this.panel.onDidChangeVisibility(callback);
@@ -37,20 +36,20 @@ export class Webview {
     this.panel.webview.onDidReceiveMessage(callback);
   }
 
-  createInit(extensionPath: string, webviewId: string, webviewTitle?: string) {
-    this.panel = vscode.window.createWebviewPanel(
-      webviewId,
-      webviewTitle || "详情",
-      vscode.ViewColumn.One,
-      {
-        enableScripts: true,
-      }
-    );
+  // createInit(extensionPath: string, webviewId: string, webviewTitle?: string) {
+  //   this.panel = vscode.window.createWebviewPanel(
+  //     webviewId,
+  //     webviewTitle || "详情",
+  //     vscode.ViewColumn.One,
+  //     {
+  //       enableScripts: true,
+  //     }
+  //   );
 
-    this.setWebviewHtml(extensionPath);
+  //   this.setWebviewHtml(extensionPath);
 
-    return this.panel;
-  }
+  //   return this.panel;
+  // }
 
   postMessage({ command, data }: { command: string; data: any }) {
     setTimeout(() => {

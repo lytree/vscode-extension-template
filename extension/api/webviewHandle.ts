@@ -16,16 +16,17 @@ import {
   studyTime,
   submit,
 } from "../utils/service.js";
-import { webview } from "../utils/webview.js";
 
 export default class WebviewHandle {
   private fenbiChannel: vscode.OutputChannel;
+  private webviewPanel: vscode.WebviewView;
 
-  constructor(fenbiChannel: vscode.OutputChannel) {
+  constructor(webviewPanel: vscode.WebviewView, fenbiChannel: vscode.OutputChannel) {
     this.fenbiChannel = fenbiChannel;
+    this.webviewPanel = webviewPanel;
   }
   onDidReceiveMessage() {
-    webview.onDidReceiveMessage((message: { [key: string]: any }) => {
+    this.webviewPanel.webview.onDidReceiveMessage((message: { [key: string]: any }) => {
       const { postData = {}, command = "" } = message || {};
       this.fenbiChannel.appendLine(`Received message: ${command} with data: ${JSON.stringify(postData)}`);
       if (command === "pageInit") this.pageInit(postData);
@@ -60,7 +61,7 @@ export default class WebviewHandle {
       count: count || 15,
       categoryId: categoryId || undefined,
     });
-    webview.postMessage({
+    this.webviewPanel.webview.postMessage({
       command: "history",
       data: res.datas,
     });
@@ -72,12 +73,12 @@ export default class WebviewHandle {
 
     const config = vscode.workspace.getConfiguration("fenbiTools");
 
-    webview.postMessage({
+    this.webviewPanel.webview.postMessage({
       command: "setting",
       data: config,
     });
 
-    webview.postMessage({
+    this.webviewPanel.webview.postMessage({
       command: "init",
       data: {
         menu: res,
@@ -85,7 +86,7 @@ export default class WebviewHandle {
       },
     });
 
-    webview.postMessage({
+    this.webviewPanel.webview.postMessage({
       command: "pageCache",
       data: cacheResult,
     });
@@ -124,7 +125,7 @@ export default class WebviewHandle {
     });
 
     if (exerciseResult?.code == -1) {
-      webview.postMessage({
+      this.webviewPanel.webview.postMessage({
         command: "message",
         data: { message: exerciseResult.message || "获取试题失败" },
       });
@@ -150,7 +151,7 @@ export default class WebviewHandle {
     questionResult["exerciseId"] = exerciseResult?.data?.ancientExerciseId?.id;
     questionResult["combinKey"] = postCombinKey;
 
-    webview.postMessage({
+    this.webviewPanel.webview.postMessage({
       command: "getQuestion",
       data: {
         combineKey: postCombinKey,
@@ -180,7 +181,7 @@ export default class WebviewHandle {
     });
 
     if (exerciseResult?.code == -1) {
-      webview.postMessage({
+      this.webviewPanel.webview.postMessage({
         command: "message",
         data: { message: exerciseResult.message || "获取试题失败" },
       });
@@ -207,7 +208,7 @@ export default class WebviewHandle {
     questionResult["exerciseId"] = exerciseResult?.data?.ancientExerciseId?.id;
     questionResult["combinKey"] = postCombinKey;
 
-    webview.postMessage({
+    this.webviewPanel.webview.postMessage({
       command: "getQuestion",
       data: {
         combineKey: postCombinKey,
@@ -249,7 +250,7 @@ export default class WebviewHandle {
     try {
       const submitRes = await submit(params.category, params.combineKey);
       if (submitRes.msg == "needPayment") {
-        webview.postMessage({
+        this.webviewPanel.webview.postMessage({
           command: "message",
           data: {
             message:
@@ -280,7 +281,7 @@ export default class WebviewHandle {
         })?.length || 0;
       solutionRes["questionCount"] = (solutionRes?.solutions || []).length;
 
-      webview.postMessage({
+      this.webviewPanel.webview.postMessage({
         command: "solution",
         data: solutionRes,
       });
@@ -312,7 +313,7 @@ export default class WebviewHandle {
       })?.length || 0;
     solutionRes["questionCount"] = (solutionRes?.solutions || []).length;
 
-    webview.postMessage({
+    this.webviewPanel.webview.postMessage({
       command: "solution",
       data: solutionRes,
     });
@@ -328,7 +329,7 @@ export default class WebviewHandle {
   async changeQuestionCount(params: { questionCount: number }) {
     const res = await changeQuestionCount(params);
 
-    webview.postMessage({
+    this.webviewPanel.webview.postMessage({
       command: "message",
       data: { message: "修改成功" },
     });
