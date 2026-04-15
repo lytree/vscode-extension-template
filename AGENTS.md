@@ -47,7 +47,7 @@ vscode-extension-template/
 ### 3. 技术栈
 
 - **后端**: TypeScript, Node.js 22
-- **前端**: React 19, TypeScript, Tailwind CSS, Vite
+- **前端**: React 19, TypeScript, Tailwind CSS, Vite,shadcn/ui
 - **包管理**: pnpm
 - **构建工具**: TypeScript Compiler, Vite
 
@@ -143,7 +143,4 @@ pnpm run package         # 打包扩展
 
 MIT 许可证
 
-## 联系方式
 
-- 发布者: your-publisher
-- 项目地址: <repository-url>

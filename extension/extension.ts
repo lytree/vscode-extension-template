@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 import { registerHelloCommand } from './commands/registerHelloCommand.js';
 import { registerOpenPanelCommand } from './commands/registerOpenPanelCommand.js';
 import { TemplateViewProvider } from './views/TemplateViewProvider.js';
+import { webview } from './utils/webview.js';
+import WebviewHandle from './api/webviewHandle.js';
 
 export function activate(context: vscode.ExtensionContext) {
   vscode.window.showInformationMessage('Extension "vscode-extension-template" is now active!');
@@ -11,6 +13,33 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(TemplateViewProvider.viewType, new TemplateViewProvider(context.extensionUri))
   );
+
+  const fenbiProvider = new FenbiWebviewProvider(context);
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider("openFenbiWebview", fenbiProvider)
+  );
+
+  vscode.commands.registerCommand("openFenbiWebview.refreshEntry", () => {
+    const config = vscode.workspace.getConfiguration("fenbiTools");
+    webview.postMessage({
+      command: "setting",
+      data: config,
+    });
+  });
+}
+
+class FenbiWebviewProvider implements vscode.WebviewViewProvider {
+  private _context: vscode.ExtensionContext;
+
+  constructor(context: vscode.ExtensionContext) {
+    this._context = context;
+  }
+
+  async resolveWebviewView(webviewView: vscode.WebviewView) {
+    webview.createSideInit(webviewView, this._context.extensionPath);
+
+    new WebviewHandle().onDidReceiveMessage();
+  }
 }
 
 export function deactivate() {

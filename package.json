@@ -16,7 +16,8 @@
   "activationEvents": [
     "onCommand:vscode-extension-template.helloWorld",
     "onCommand:vscode-extension-template.openPanel",
-    "onView:template.webviewView"
+    "onView:template.webviewView",
+    "onView:openFenbiWebview"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -28,6 +29,14 @@
       {
         "command": "vscode-extension-template.openPanel",
         "title": "Template: Open Webview Panel"
+      },
+      {
+        "command": "openFenbiWebview.refreshEntry",
+        "title": "刷新",
+        "icon": {
+          "light": "resources/light/refresh.svg",
+          "dark": "resources/dark/refresh.svg"
+        }
       }
     ],
     "viewsContainers": {
@@ -36,6 +45,11 @@
           "id": "template-sidebar",
           "title": "Template",
           "icon": "resources/template.svg"
+        },
+        {
+          "id": "fenbiBar",
+          "title": "fenbi",
+          "icon": "resources/fenbi.svg"
         }
       ]
     },
@@ -46,7 +60,54 @@
           "type": "webview",
           "name": "Template View"
         }
+      ],
+      "fenbiBar": [
+        {
+          "type": "webview",
+          "id": "openFenbiWebview",
+          "name": "container"
+        }
       ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "openFenbiWebview.refreshEntry",
+          "group": "navigation",
+          "when": "view == openFenbiWebview"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "FenbiTools",
+      "properties": {
+        "fenbiTools.cookie": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "cookie，必填，请修改后刷新",
+          "editPresentation": "multilineText"
+        },
+        "fenbiTools.color": {
+          "type": "string",
+          "default": "#ffffff",
+          "markdownDescription": "自定义字体color颜色，请填写色值，非中文！请修改后刷新"
+        },
+        "fenbiTools.backgroundColor": {
+          "type": "string",
+          "default": "#21222b",
+          "markdownDescription": "自定义背景bgColor颜色，请填写色值，非中文！请修改后刷新"
+        },
+        "fenbiTools.needLineThrough": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "开启后，选项后会增加排除按钮，点击即可给当前选项增加中划线"
+        },
+        "fenbiTools.fontSize": {
+          "type": "number",
+          "default": 12,
+          "markdownDescription": "自定义字体大小（单位px），默认12，请修改后刷新"
+        }
+      }
     }
   },
   "scripts": {
@@ -83,13 +144,17 @@
     "vite": "^8.0.8"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.1.1",
     "@base-ui/react": "^1.4.0",
     "@fontsource-variable/geist": "^5.2.8",
     "@tailwindcss/vite": "^4.2.2",
+    "antd": "^5.10.1",
     "class-variance-authority": "^0.7.1",
+    "dayjs": "^1.11.20",
     "lucide-react": "^1.8.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
+    "react-router-dom": "^7.9.4",
     "shadcn": "^4.2.0",
     "tailwindcss": "^4.2.2",
     "tw-animate-css": "^1.4.0"

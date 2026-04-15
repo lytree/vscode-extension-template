@@ -16,7 +16,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         panel: 'src/panel/main.tsx',
-        view: 'src/view/main.tsx'
+        view: 'src/view/main.tsx',
+        fenbi: 'src/fenbi/main.tsx'
       },
       output: {
         entryFileNames: '[name].js',
