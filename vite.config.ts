@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@": path.resolve(__dirname, "src"),
     },
   },
   build: {
@@ -16,8 +16,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         panel: 'src/panel/main.tsx',
-        view: 'src/view/main.tsx',
-        fenbi: 'src/fenbi/main.tsx'
+        view: 'src/view/main.tsx'
       },
       output: {
         entryFileNames: '[name].js',

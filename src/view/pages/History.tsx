@@ -1,15 +1,13 @@
 import * as React from "react";
-import { Button, Spin, Modal, message } from "antd";
 import { HistoryItem } from "../components/history-item";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSetting } from "../components/hooks";
 import { getVscodeApi } from "../utils/vscodeApi";
+import { Button } from "@/components/ui/button";
 
 const vscode = getVscodeApi();
 
 export const History = () => {
-  const [modal, contextHolder] = Modal.useModal();
-  const [messageApi, messageHoder] = message.useMessage();
   const [historyList, setHistoryList] = React.useState<any>([]);
 
   const [loading, setLoading] = React.useState(true);
@@ -34,7 +32,7 @@ export const History = () => {
       setLoading(false);
 
       if (message.command === "message") {
-        messageApi.info(message.data.message);
+        alert(message.data.message);
       }
 
       if (message.command === "history") {
@@ -64,9 +62,13 @@ export const History = () => {
 
   return (
     <div>
-      <Spin tip="loading..." spinning={loading}>
+      {loading ? (
+        <div className="flex justify-center items-center h-32">
+          <div className="text-sm text-gray-400">loading...</div>
+        </div>
+      ) : (
         <div className="menu-container">
-          <Button type="text" onClick={onBack}>
+          <Button variant="ghost" onClick={onBack}>
             返回上一页
           </Button>
           {historyList.map((item: any, index: number) => {
@@ -83,9 +85,7 @@ export const History = () => {
             );
           })}
         </div>
-      </Spin>
-
-      {contextHolder}
+      )}
     </div>
   );
 };

@@ -1,10 +1,17 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import '@/styles.css'
-import App from './page.tsx'
+import * as React from "react";
+import * as ReactDOM from "react-dom/client";
+import { App } from "./app";
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
+const rootDiv = document.createElement("div");
+rootDiv.id = "root";
+document.body.appendChild(rootDiv);
+
+const loadingDiv = document.getElementById("loading");
+if (loadingDiv) loadingDiv.style.display = "none";
+
+const root = ReactDOM.createRoot(rootDiv);
+root.render(
+  <React.StrictMode>
     <App />
-  </StrictMode>,
-)
+  </React.StrictMode>
+);

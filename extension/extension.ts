@@ -14,12 +14,12 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.registerWebviewViewProvider(TemplateViewProvider.viewType, new TemplateViewProvider(context.extensionUri))
   );
 
-  const fenbiProvider = new FenbiWebviewProvider(context);
+  const viewProvider = new ViewWebviewProvider(context);
   context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider("openFenbiWebview", fenbiProvider)
+    vscode.window.registerWebviewViewProvider("openViewWebview", viewProvider)
   );
 
-  vscode.commands.registerCommand("openFenbiWebview.refreshEntry", () => {
+  vscode.commands.registerCommand("openViewWebview.refreshEntry", () => {
     const config = vscode.workspace.getConfiguration("fenbiTools");
     webview.postMessage({
       command: "setting",
@@ -28,7 +28,7 @@ export function activate(context: vscode.ExtensionContext) {
   });
 }
 
-class FenbiWebviewProvider implements vscode.WebviewViewProvider {
+class ViewWebviewProvider implements vscode.WebviewViewProvider {
   private _context: vscode.ExtensionContext;
 
   constructor(context: vscode.ExtensionContext) {

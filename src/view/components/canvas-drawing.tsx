@@ -1,19 +1,8 @@
-import { Button } from "antd";
 import * as React from "react";
+import { Button } from "@/components/ui/button";
 
-export default function CanvasDrawing() {
-  const [showDraw, setShowDraw] = React.useState(false);
-
-  return (
-    <>
-      {!showDraw && (
-        <Button className="draw_button" onClick={() => setShowDraw(true)}>
-          打开画板
-        </Button>
-      )}
-      {showDraw && <CanvasDraw onClose={() => setShowDraw(false)} />}
-    </>
-  );
+export function CanvasDrawing({ onClose }: { onClose: () => void }) {
+  return <CanvasDraw onClose={onClose} />;
 }
 
 const CanvasDraw = ({ onClose }: { onClose: () => void }) => {
@@ -119,11 +108,13 @@ const CanvasDraw = ({ onClose }: { onClose: () => void }) => {
         onTouchEnd={stopDrawing}
       />
 
-      <div style={{ position: "fixed", top: 0, right: 0, zIndex: 999 }}>
-        <Button onClick={onClose} style={{ marginRight: 8 }}>
+      <div style={{ position: "fixed", top: 0, right: 0, zIndex: 999, display: "flex", gap: 2 }}>
+        <Button onClick={onClose} variant="default">
           关闭画板
         </Button>
-        <Button onClick={clearCanvas}>清空</Button>
+        <Button onClick={clearCanvas} variant="default">
+          清空
+        </Button>
       </div>
     </div>
   );

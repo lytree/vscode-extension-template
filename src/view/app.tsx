@@ -1,10 +1,10 @@
 import * as React from "react";
 import { Routes, Route, HashRouter } from "react-router-dom";
-import { Home } from "./pages/Index";
-import { History } from "./pages/History";
-import { Detail } from "./pages/Detail";
-import { Answer } from "./pages/Answer";
-import { SettingProvider } from "./components/hooks";
+import { Home } from "./pages/Index.js";
+import { History } from "./pages/History.js";
+import { Detail } from "./pages/Detail.js";
+import { Answer } from "./pages/Answer.js";
+import { SettingProvider } from "./components/hooks.js";
 
 import "./style/index.css";
 

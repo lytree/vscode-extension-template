@@ -7,7 +7,7 @@ export class Webview {
 
   setWebviewHtml(extensionPath: string) {
     const scriptPath = vscode.Uri.file(
-      path.join(extensionPath, "media", "fenbi.js")
+      path.join(extensionPath, "media", "view.js")
     );
 
     const scriptUri = this.panel.webview.asWebviewUri(scriptPath);

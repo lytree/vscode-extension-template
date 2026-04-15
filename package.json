@@ -17,7 +17,7 @@
     "onCommand:vscode-extension-template.helloWorld",
     "onCommand:vscode-extension-template.openPanel",
     "onView:template.webviewView",
-    "onView:openFenbiWebview"
+    "onView:openViewWebview"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -31,7 +31,7 @@
         "title": "Template: Open Webview Panel"
       },
       {
-        "command": "openFenbiWebview.refreshEntry",
+        "command": "openViewWebview.refreshEntry",
         "title": "刷新",
         "icon": {
           "light": "resources/light/refresh.svg",
@@ -47,8 +47,8 @@
           "icon": "resources/template.svg"
         },
         {
-          "id": "fenbiBar",
-          "title": "fenbi",
+          "id": "viewBar",
+          "title": "view",
           "icon": "resources/fenbi.svg"
         }
       ]
@@ -61,10 +61,10 @@
           "name": "Template View"
         }
       ],
-      "fenbiBar": [
+      "viewBar": [
         {
           "type": "webview",
-          "id": "openFenbiWebview",
+          "id": "openViewWebview",
           "name": "container"
         }
       ]
@@ -72,9 +72,9 @@
     "menus": {
       "view/title": [
         {
-          "command": "openFenbiWebview.refreshEntry",
+          "command": "openViewWebview.refreshEntry",
           "group": "navigation",
-          "when": "view == openFenbiWebview"
+          "when": "view == openViewWebview"
         }
       ]
     },
@@ -144,11 +144,9 @@
     "vite": "^8.0.8"
   },
   "dependencies": {
-    "@ant-design/icons": "^6.1.1",
     "@base-ui/react": "^1.4.0",
     "@fontsource-variable/geist": "^5.2.8",
     "@tailwindcss/vite": "^4.2.2",
-    "antd": "^5.10.1",
     "class-variance-authority": "^0.7.1",
     "dayjs": "^1.11.20",
     "lucide-react": "^1.8.0",

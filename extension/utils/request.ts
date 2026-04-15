@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-const https = require("https");
+import https from "https";
 
 const isJSON = (data: any) => {
   try {

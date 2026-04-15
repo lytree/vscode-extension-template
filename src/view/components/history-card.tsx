@@ -1,6 +1,6 @@
 import * as React from "react";
-import { Button, Flex } from "antd";
 import dayjs from "dayjs";
+import { Button } from "@/components/ui/button";
 
 export const HistoryCard = (props: {
   onClick?: () => void | undefined;
@@ -12,28 +12,27 @@ export const HistoryCard = (props: {
   const _data = data.find((item) => item.status == 0 && item.sheet?.type == 3);
 
   return (
-    <div style={{ border: "1px solid #ffffff", borderRadius: 5, padding: 10 }}>
-      <Flex justify="space-between" align="center">
+    <div className="border border-white rounded-lg p-4">
+      <div className="flex justify-between items-center mb-4">
         <span>练习历史</span>
         <Button
-          type="primary"
-          style={{ borderColor: "white" }}
+          variant="default"
           onClick={onClick}
         >
           全部（最近15条）
         </Button>
-      </Flex>
+      </div>
       {_data?.status == 0 && _data?.sheet?.type == 3 ? (
-        <div>
+        <div className="space-y-2">
           <p>{_data?.sheet?.name}</p>
           <p>创建时间：{dayjs(_data?.createTime).format("YYYY-MM-DD")}</p>
           <Button
-            type="primary"
-            style={{ borderColor: "white" }}
+            variant="default"
             onClick={() => {
               if (_data?.status == 1) return;
               goExercise(_data);
             }}
+            disabled={_data?.status == 1}
           >
             {_data?.status == 1 ? "已完成" : "继续做题"}
           </Button>

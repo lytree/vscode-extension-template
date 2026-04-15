@@ -1,13 +1,13 @@
 import * as React from "react";
-import { TCacheData, TSetting } from "../types";
-import { QuestionCount } from "../components/question-count";
-import { CustomTree } from "../components/custom-tree";
-import { HistoryCard } from "../components/history-card";
+import { TCacheData, TSetting } from "../types/index.js";
+import { QuestionCount } from "../components/question-count.js";
+import { CustomTree } from "../components/custom-tree.js";
+import { HistoryCard } from "../components/history-card.js";
 import { useNavigate } from "react-router-dom";
-import { useSetting } from "../components/hooks";
-import { categoryOptions } from "../utils/constant";
-import { getVscodeApi } from "../utils/vscodeApi";
-import { modifyArrayToTree } from "../utils/modifyArray";
+import { useSetting } from "../components/hooks.js";
+import { categoryOptions } from "../utils/constant.js";
+import { getVscodeApi } from "../utils/vscodeApi.js";
+import { modifyArrayToTree } from "../utils/modifyArray.tsx";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 

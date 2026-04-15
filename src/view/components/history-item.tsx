@@ -1,7 +1,7 @@
-import { Button, Flex } from "antd";
 import * as React from "react";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 export const HistoryItem = (props: {
   data: any;
@@ -12,8 +12,8 @@ export const HistoryItem = (props: {
   const navigate = useNavigate();
 
   return (
-    <div style={{ border: "1px solid #ffffff", borderRadius: 5, padding: 10 }}>
-      <Flex justify="space-between" align="center">
+    <div className="border border-white rounded-lg p-4">
+      <div className="flex justify-between items-center">
         <div>
           <p>{data?.sheet?.name}</p>
           <p>{data?.sheet?.type == 1 ? "试卷" : "练习"}</p>
@@ -24,8 +24,7 @@ export const HistoryItem = (props: {
         </div>
         <div>
           <Button
-            type="primary"
-            style={{ borderColor: "white" }}
+            variant="default"
             onClick={() => {
               if (data?.status == 1) {
                 navigate("/answer", {
@@ -44,7 +43,7 @@ export const HistoryItem = (props: {
             {data?.status == 1 ? "已完成" : "继续做题"}
           </Button>
         </div>
-      </Flex>
+      </div>
     </div>
   );
 };

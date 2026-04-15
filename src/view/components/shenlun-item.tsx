@@ -1,7 +1,7 @@
 import * as React from "react";
 import { TMaterials, TQuestionItem, TSolutionItem } from "../types";
-import { Input, Radio, RadioChangeEvent } from "antd";
 import { radioMap } from "../utils/constant";
+import { Textarea } from "@/components/ui/textarea";
 
 interface TShenlunItemProps {
   data: TSolutionItem[];
@@ -10,7 +10,6 @@ interface TShenlunItemProps {
   onChange: (e: string) => void;
 }
 
-const { TextArea } = Input;
 export const ShenlunItem = (props: TShenlunItemProps) => {
   const { data = [], materials = [], onChange, index } = props;
 
@@ -36,17 +35,21 @@ export const ShenlunItem = (props: TShenlunItemProps) => {
             <div className="answer-item">
               {(ele.accessories || []).map((access: any, ind: number) => {
                 return (
-                  <TextArea
-                    defaultValue={ele?.userAnswer?.answer || ""}
-                    maxLength={access?.wordCount || undefined}
-                    allowClear
-                    placeholder="请输入答案..."
-                    showCount
-                    rows={6}
-                    onBlur={(e) => {
-                      onChange(e.target.value);
-                    }}
-                  />
+                  <div className="mt-2">
+                    <Textarea
+                      defaultValue={ele?.userAnswer?.answer || ""}
+                      maxLength={access?.wordCount || undefined}
+                      placeholder="请输入答案..."
+                      rows={6}
+                      onBlur={(e) => {
+                        onChange(e.target.value);
+                      }}
+                      className="w-full"
+                    />
+                    <div className="text-right text-sm text-gray-400 mt-1">
+                      {ele?.userAnswer?.answer?.length || 0}/{access?.wordCount || 0}
+                    </div>
+                  </div>
                 );
               })}
             </div>

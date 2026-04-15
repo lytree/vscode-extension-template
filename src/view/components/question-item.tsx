@@ -1,9 +1,11 @@
 import * as React from "react";
 import { TMaterials, TQuestionItem, TSolutionItem } from "../types";
-import { Button, Radio, RadioChangeEvent, Space } from "antd";
 import { radioMap } from "../utils/constant";
 import { setImg } from "../utils/setImg";
 import { useSetting } from "../components/hooks";
+import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 interface TQuestionItemProps {
   data: TSolutionItem[];
@@ -46,46 +48,40 @@ export const QuestionItem = (props: TQuestionItemProps) => {
               <div className="answer-item">
                 {(ele.accessories || []).map((access: any, ind: number) => {
                   return (
-                    <Radio.Group
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                      }}
-                      onChange={(e) => {
-                        onChange(e, ele, index);
-                      }}
-                      defaultValue={
-                        ele?.userAnswer?.choice
-                          ? Number(ele?.userAnswer?.choice)
-                          : undefined
-                      }
-                    >
+                    <div className="space-y-2">
                       {(access?.options || []).map(
                         (option: any, index2: number) => {
                           const newOption = setImg(option);
                           const key = `${index}-${ind}-${index2}`;
                           const excluded = excludeMap[key];
                           return (
-                            <Space style={{ justifyContent: "space-between" }}>
-                              <Radio value={index2}>
-                                <div
-                                  style={{
-                                    textDecoration: excluded
-                                      ? "line-through"
-                                      : "",
-                                  }}
-                                >
-                                  <span>{radioMap[index2 + 1]}、</span>
-                                  <span
-                                    dangerouslySetInnerHTML={{
-                                      __html: newOption,
-                                    }}
-                                  ></span>
+                            <div key={key} className="flex items-center justify-between">
+                              <RadioGroup
+                                value={ele?.userAnswer?.choice ? Number(ele?.userAnswer?.choice) : undefined}
+                                onValueChange={(value) => {
+                                  const event = { target: { value } } as any;
+                                  onChange(event, ele, index);
+                                }}
+                              >
+                                <div className="flex items-center space-x-2">
+                                  <RadioGroupItem value={index2} id={`radio-${key}`} />
+                                  <Label
+                                    htmlFor={`radio-${key}`}
+                                    className={excluded ? "line-through" : ""}
+                                  >
+                                    <span>{radioMap[index2 + 1]}、</span>
+                                    <span
+                                      dangerouslySetInnerHTML={{
+                                        __html: newOption,
+                                      }}
+                                    ></span>
+                                  </Label>
                                 </div>
-                              </Radio>
+                              </RadioGroup>
                               {setting.needLineThrough ? (
                                 <Button
-                                  size="small"
+                                  size="sm"
+                                  variant="ghost"
                                   onClick={() => {
                                     const key = `${index}-${ind}-${index2}`;
                                     setExcludeMap((prev) => ({
@@ -99,11 +95,11 @@ export const QuestionItem = (props: TQuestionItemProps) => {
                               ) : (
                                 <></>
                               )}
-                            </Space>
+                            </div>
                           );
                         },
                       )}
-                    </Radio.Group>
+                    </div>
                   );
                 })}
               </div>

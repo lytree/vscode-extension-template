@@ -1,5 +1,4 @@
 import * as React from "react";
-import { Button, Space, Spin, Modal, message } from "antd";
 import { groupByMaterialIndexesTo2DArray } from "../utils/analyze";
 import {
   TCacheData,
@@ -15,6 +14,7 @@ import { getVscodeApi } from "../utils/vscodeApi";
 import { ShenlunItem } from "../components/shenlun-item";
 
 import "../style/detail.css";
+import { Button } from "@/components/ui/button";
 
 interface TLastAnswerRecord {
   lastCount: number | null;
@@ -25,7 +25,6 @@ interface TLastAnswerRecord {
 const vscode = getVscodeApi();
 let modalIs = false;
 export const Answer = () => {
-  const [modal, contextHolder] = Modal.useModal();
   const [isFirst, setFirst] = React.useState(false);
   const [startTime, setStartTime] = React.useState(0);
   const [lastAnswerRecord, setLastAnswerRecord] =
@@ -68,14 +67,11 @@ export const Answer = () => {
       }
       if (_message.command === "message") {
         if (modalIs) return;
-        modal.error({
-          title: "提示",
-          content: _message.data.message,
-          onOk: () => {
-            modalIs = false;
-          },
-        });
+        alert(_message.data.message);
         modalIs = true;
+        setTimeout(() => {
+          modalIs = false;
+        }, 1000);
       }
       if (_message.command === "solution") {
         setSolutionData(_message.data);
@@ -136,17 +132,21 @@ export const Answer = () => {
 
   return (
     <div className="detail_page">
-      <Spin tip="loading..." spinning={loading}>
+      {loading ? (
+        <div className="flex justify-center items-center h-32">
+          <div className="text-sm text-gray-400">loading...</div>
+        </div>
+      ) : (
         <div className="question-container">
           <div className="top-bar">
-            <Button type="text" onClick={onBack}>
+            <Button variant="ghost" onClick={onBack}>
               返回上一页
             </Button>
 
-            <Button onClick={onJump}>跳转粉笔网址</Button>
+            <Button variant="default" onClick={onJump}>跳转粉笔网址</Button>
           </div>
           <div>
-            答对题目数：{solutionData?.correctCount} /{" "}
+            答对题目数：{solutionData?.correctCount} / 
             {solutionData?.questionCount}{" "}
           </div>
 
@@ -177,9 +177,7 @@ export const Answer = () => {
             })}
           </div>
         </div>
-      </Spin>
-
-      {contextHolder}
+      )}
     </div>
   );
 };
