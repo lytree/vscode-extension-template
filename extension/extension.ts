@@ -11,7 +11,7 @@ export function activate(context: vscode.ExtensionContext) {
   registerOpenPanelCommand(context, fenbiChannel);
 
   context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(TemplateViewProvider.viewType, new TemplateViewProvider(context.extensionUri, fenbiChannel))
+    vscode.window.registerWebviewViewProvider(TemplateViewProvider.viewType, new TemplateViewProvider(context, fenbiChannel))
   );
 
 

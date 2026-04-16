@@ -1,121 +1,111 @@
 import * as React from "react";
-import type { TCacheData, TSetting } from "../types";
-import { QuestionCount } from "../components/question-count";
-import { CustomTree } from "../components/custom-tree";
-import { HistoryCard } from "../components/history-card";
+import type { TCacheData, TSetting } from "../../types";
 import { useNavigate } from "react-router-dom";
-import { useSetting } from "../components/hooks";
-import { categoryOptions } from "../utils/constant";
 import { getVscodeApi } from "../utils/vscodeApi";
-import { modifyArrayToTree } from "../utils/modifyArray";
 import { Button } from "../../components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 
 const vscode = getVscodeApi();
 
-export const Home = () => {
-  const [historyList, setHistoryList] = React.useState<any>([]);
-  const [loading, setLoading] = React.useState(true);
+// 分类数据结构类型
+interface CategoryItem {
+  id: number;
+  name: string;
+  count: number;
+  optional: boolean;
+  children: CategoryItem[] | null;
+  [key: string]: any;
+}
 
-  const [treeData, setTreeData] = React.useState([]);
+// 可折叠导航项组件
+const CollapsibleNavItem: React.FC<{
+  item: CategoryItem;
+  level: number;
+  onItemClick: (item: CategoryItem) => void;
+}> = ({ item, level, onItemClick }) => {
+  const [isExpanded, setIsExpanded] = React.useState(false);
+  
+  const hasChildren = item.children && item.children.length > 0;
+  
+  return (
+    <div className="w-full">
+      <div 
+        className={`flex items-center justify-between p-2 hover:bg-muted cursor-pointer transition-colors ${level > 0 ? `pl-${level * 4}` : ''}`}
+        onClick={() => {
+          if (hasChildren) {
+            setIsExpanded(!isExpanded);
+          } else {
+            onItemClick(item);
+          }
+        }}
+      >
+        <div className="flex items-center gap-2">
+          {hasChildren && (
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="14" 
+              height="14" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              className={`text-primary transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+            >
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          )}
+          <span className="flex-1 text-foreground">{item.name}</span>
+          <span className="text-xs text-muted-foreground">{item.count}</span>
+        </div>
+      </div>
+      
+      {hasChildren && isExpanded && (
+        <div className="w-full">
+          {item.children.map((child) => (
+            <CollapsibleNavItem 
+              key={child.id} 
+              item={child} 
+              level={level + 1} 
+              onItemClick={onItemClick}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export const Home = () => {
+  const [loading, setLoading] = React.useState(true);
+  const [categories, setCategories] = React.useState<CategoryItem[]>([]);
   const [cacheData, setCacheData] = React.useState<TCacheData>();
-  const { setting, setSetting } = useSetting();
 
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    pageInit({ categoryId: setting.categoryId });
-    getHistory({ count: 15, categoryId: 4 });
-    // 2. 定义处理函数（方便移除）
-    const handleMessage = (event: MessageEvent) => {
+    // 监听来自扩展的消息
+    const handleMessage = (event: any) => {
       const message = event.data;
-      setLoading(false);
-
-      switch (message.command) {
-        case "setting":
-          setTheme(message.data);
-          break;
-        case "init":
-          const { menu, cacheResult } = message.data;
-          const _data = modifyArrayToTree(menu, cacheResult || {}, treeClick);
-          setTreeData(_data as any);
-          break;
-        case "pageCache":
-          setCacheData(message.data);
-          break;
-        case "message":
-          // 注意：这里的 setting.categoryId 可能是旧值
-          pageInit({ categoryId: setting.categoryId });
-          alert(message.data.message);
-          break;
-        case "history":
-          setHistoryList(message.data);
-          break;
+      
+      if (message.command === "init") {
+        // 使用从扩展获取的分类数据
+        setCategories(message.data.menu || []);
+        setCacheData(message.data.cacheResult);
+        setLoading(false);
       }
     };
-    // 3. 绑定监听
+    
     window.addEventListener("message", handleMessage);
-
-    // 4. 重要：销毁监听，防止内存泄漏
+    
+    // 初始化时请求数据
+    vscode.postMessage({ command: "pageInit" });
+    
     return () => {
       window.removeEventListener("message", handleMessage);
     };
   }, []);
 
-  const setTheme = (theme: TSetting) => {
-    setSetting((prev: any) => ({ ...prev, ...theme }));
-
-    document.documentElement.style.setProperty(
-      "--primary-color",
-      theme.color || "#ffffff",
-    );
-    document.documentElement.style.setProperty(
-      "--primary-backgroundColor",
-      theme.backgroundColor || "#ffffff",
-    );
-    document.documentElement.style.setProperty(
-      "--primary-fontSize",
-      `${theme.fontSize || 12}px`,
-    );
-  };
-
-  const pageInit = (postData?: any) => {
-    vscode.postMessage({
-      command: "pageInit",
-      postData,
-    });
-  };
-
-  const treeClick = (e: any, cacheResult: any) => {
-    const key = e.id;
-
-    setLoading(true);
-    let combineKey: string | null = null;
-    const len = cacheResult?.keypointIds?.length || 0;
-    if (len > 0 && cacheResult?.keypointIds?.includes(key)) {
-      combineKey = cacheResult?.combineKey || "";
-    }
-    goDetail({ id: Number(key), combineKey: combineKey || "" });
-  };
-
-  const onQuestionCountChange = (e: number) => {
-    setLoading(true);
-    vscode.postMessage({
-      command: "changeQuestionCount",
-      postData: {
-        questionCount: e,
-      },
-    });
-  };
-
-  const goHistory = () => {
-    navigate("/history", {
-      state: {
-        count: 15,
-        categoryId: 3,
-      },
-    });
-  };
 
   const goDetail = ({
     id,
@@ -135,123 +125,72 @@ export const Home = () => {
     });
   };
 
-  const getHistory = ({
-    count,
-    categoryId,
-    category,
-  }: {
-    category?: string;
-    count?: number;
-    categoryId?: number;
-  }) => {
+  const handleCategoryClick = (item: CategoryItem) => {
+    // 处理分类点击
+    console.log('Category clicked:', item.name, item.id);
+    
+    // 发送消息到扩展，创建 Panel 并传入参数
     vscode.postMessage({
-      command: "history",
+      command: "createPanel",
       postData: {
-        category: category || setting.categoryId,
-        count,
-        categoryId,
-      },
+        id: item.id,
+        name: item.name,
+        type: 1,
+        router: "/detail",
+      }
     });
-  };
-
-  const onChangeCategory = (value: string | null, _eventDetails?: any) => {
-    if (!value) return;
-    pageInit({
-      categoryId: value,
-    });
-    vscode.postMessage({
-      command: "changeCategory",
-      postData: {
-        categoryId: value,
-      },
-    });
-    getHistory({ count: 15, categoryId: 4, category: value });
-    setSetting((prev: any) => ({ ...prev, categoryId: value }));
+    
+    // // 这里可以根据需要跳转到详情页或执行其他操作
+    // goDetail({ id: item.id, type: 1 });
   };
 
   return (
-    <div>
+    <div className="h-full bg-card rounded-lg shadow-sm">
       {loading ? (
         <div className="flex justify-center items-center h-32">
-          <div className="text-sm text-gray-400">Index loading...</div>
+          <div className="text-sm text-muted-foreground">Index loading...</div>
         </div>
       ) : (
-        <div>
-          <div className="flex justify-end items-center gap-4">
+        <div className="h-full flex flex-col">
+          {/* 标题栏 */}
+          <div className="bg-primary text-primary-foreground p-3 flex justify-between items-center rounded-t-lg">
+            <div className="flex items-center gap-2">
+              <span className="text-lg font-semibold">专项练习</span>
+              <div className="bg-primary/80 p-1 rounded">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                </svg>
+              </div>
+            </div>
             <Button
               variant="ghost"
               size="sm"
+              className="text-primary-foreground hover:bg-primary/80"
               onClick={() => {
-                vscode.postMessage({
-                  command: "openInBrowser",
-                  postData: {
-                    url: "https://github.com/Mrxiiaobai/fenbi-tools/issues",
-                  },
-                });
-              }}
-            >
-              问题反馈
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                vscode.postMessage({
-                  command: "openInBrowser",
-                  postData: {
-                    url: "https://github.com/Mrxiiaobai/fenbi-tools/issues/9",
-                  },
-                });
-              }}
-            >
-              入群交流
-            </Button>
-          </div>
-          <div className="flex justify-start items-center mb-4">
-            <Button
-              variant="ghost"
-              onClick={() => {
+                // 自定义刷题功能
                 goDetail({
                   type: 2,
                 });
               }}
             >
-              快速练习
+              自定义刷题
             </Button>
           </div>
-          <Select
-            value={setting.categoryId || "xingce"}
-            onValueChange={onChangeCategory}
-          >
-            <SelectTrigger className="w-32 m-2.5">
-              <SelectValue placeholder="选择类别" />
-            </SelectTrigger>
-            <SelectContent className="w-32 m-2.5">
-              {categoryOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
+          
+          {/* 分类列表 */}
+          <div className="flex-1 overflow-y-auto p-2">
+            <div className="space-y-1">
+              {categories.map((category) => (
+                <div key={category.id} className="border-b border-border last:border-b-0">
+                  <CollapsibleNavItem 
+                    item={category} 
+                    level={0} 
+                    onItemClick={handleCategoryClick}
+                  />
+                </div>
               ))}
-            </SelectContent>
-          </Select>
-          {setting.categoryId == "shenlun" && (
-            <div className="text-sm text-gray-400 mb-4">
-              ps：申论功能需要前往粉笔官网充vip才能交卷，与该插件无关，由于没有vip，交卷及后续功能暂无法支持，感谢理解！
             </div>
-          )}
-          <div className="menu-container">
-            <HistoryCard
-              onClick={goHistory}
-              data={historyList}
-              goExercise={(data) => {
-                goDetail({
-                  type: 1,
-                  combineKey: data?.key,
-                });
-              }}
-            />
-            <QuestionCount onChange={onQuestionCountChange} />
-            <CustomTree treeData={treeData} />
           </div>
         </div>
       )}

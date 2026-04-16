@@ -92,7 +92,12 @@ export const getCategories = async (category: string) => {
   const res = await ajax("GET", url);
   return res;
 };
-
+/**
+ * 题目列表
+ * @param category 
+ * @param combineKey 
+ * @returns 
+ */
 export const getSolution = async (category = "xingce", combineKey: string) => {
   const url = `https://tiku.fenbi.com/combine/exercise/getSolution?format=html&key=${combineKey}&routecs=${category}&kav=121&av=121&hav=121&app=web`;
   const res = await ajax("GET", url);

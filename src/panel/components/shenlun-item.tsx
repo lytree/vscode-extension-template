@@ -1,6 +1,6 @@
 import * as React from "react";
-import type { TMaterials, TQuestionItem, TSolutionItem } from "../types";
-import { radioMap } from "../utils/constant";
+import type { TMaterials, TQuestionItem, TSolutionItem } from "../../types";
+import { radioMap } from "../../view/utils/constant";
 import { Textarea } from "../../components/ui/textarea";
 
 interface TShenlunItemProps {

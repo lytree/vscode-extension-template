@@ -1,8 +1,8 @@
 import * as React from "react";
-import type { TMaterials, TQuestionItem, TSolutionItem } from "../types";
-import { radioMap } from "../utils/constant";
-import { setImg } from "../utils/setImg";
-import { useSetting } from "../components/hooks";
+import type { TMaterials, TQuestionItem, TSolutionItem } from "../../types";
+import { radioMap } from "../../view/utils/constant";
+import { setImg } from "../../view/utils/setImg";
+import { useSetting } from "../../view/components/hooks";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";

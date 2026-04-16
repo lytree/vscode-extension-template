@@ -16,19 +16,23 @@ import {
   studyTime,
   submit,
 } from "../utils/service.js";
+import { TemplatePanel } from "../panels/TemplatePanel.js";
 
 export default class WebviewHandle {
   private fenbiChannel: vscode.OutputChannel;
   private webviewPanel: vscode.WebviewView;
+  private context: vscode.ExtensionContext;
+  private panelParams: any = null;
 
-  constructor(webviewPanel: vscode.WebviewView, fenbiChannel: vscode.OutputChannel) {
+  constructor(webviewPanel: vscode.WebviewView, fenbiChannel: vscode.OutputChannel, context: vscode.ExtensionContext) {
     this.fenbiChannel = fenbiChannel;
     this.webviewPanel = webviewPanel;
+    this.context = context;
   }
   onDidReceiveMessage() {
     this.webviewPanel.webview.onDidReceiveMessage((message: { [key: string]: any }) => {
       const { postData = {}, command = "" } = message || {};
-      this.fenbiChannel.appendLine(`Received message: ${command} with data: ${JSON.stringify(postData)}`);
+      this.fenbiChannel.appendLine( `WebviewHandle Received message: ${command} with data: ${JSON.stringify(postData)}`);
       if (command === "pageInit") this.pageInit(postData);
       if (command === "changeCategory") this.changeCategory(postData);
       if (command === "getQuestion") this.getQuestion(postData);
@@ -47,6 +51,13 @@ export default class WebviewHandle {
       if (command === "openInBrowser") {
         console.log("openInBrowser", postData);
         vscode.env.openExternal(vscode.Uri.parse(postData.url));
+      }
+      if (command === "createPanel") {
+        // 存储参数
+        this.panelParams = postData;
+
+        // 创建 Panel 并传递参数
+        TemplatePanel.createOrShow(this.context.extensionUri, this.fenbiChannel, postData);
       }
     });
   }
@@ -73,9 +84,17 @@ export default class WebviewHandle {
 
     const config = vscode.workspace.getConfiguration("fenbiTools");
 
+    // 获取当前主题色
+    const themeColor = this.getThemeColor();
+
     this.webviewPanel.webview.postMessage({
       command: "setting",
       data: config,
+    });
+
+    this.webviewPanel.webview.postMessage({
+      command: "themeChange",
+      data: themeColor,
     });
 
     this.webviewPanel.webview.postMessage({
@@ -89,6 +108,29 @@ export default class WebviewHandle {
     this.webviewPanel.webview.postMessage({
       command: "pageCache",
       data: cacheResult,
+    });
+
+    // 监听主题变化
+    this.listenForThemeChanges();
+  }
+
+  // 获取当前主题色
+  private getThemeColor() {
+    const isDark = vscode.window.activeColorTheme.kind === vscode.ColorThemeKind.Dark;
+    return {
+      isDark,
+      theme: vscode.window.activeColorTheme.kind
+    };
+  }
+
+  // 监听主题变化
+  private listenForThemeChanges() {
+    vscode.window.onDidChangeActiveColorTheme(() => {
+      const themeColor = this.getThemeColor();
+      this.webviewPanel.webview.postMessage({
+        command: "themeChange",
+        data: themeColor,
+      });
     });
   }
 
@@ -286,17 +328,19 @@ export default class WebviewHandle {
         data: solutionRes,
       });
     } catch (error) {
-      console.log("🚀 ~ WebviewHandle ~ submit ~ error:", error);
+      this.fenbiChannel.appendLine("🚀 ~ WebviewHandle ~ submit ~ error:" + error);
     }
   }
 
   async getSolutions(postData: { category: string; combineKey: string }) {
-    console.log("🚀 ~ WebviewHandle ~ getSolution ~ postData:", postData);
+    this.fenbiChannel.appendLine("🚀 ~ WebviewHandle ~ getSolution ~ postData:" + JSON.stringify(postData));
     const res = await getSolution(postData.category, postData.combineKey);
+    this.fenbiChannel.appendLine("getSolution :" + JSON.stringify(res));
     const solutionRes = await getSolutionQuestion(
       res?.data?.staticUrl?.urls?.[0],
       postData.category,
     );
+    this.fenbiChannel.appendLine("getSolutionQuestion :" + JSON.stringify(solutionRes));
 
     (solutionRes?.solutions || []).forEach((item: any) => {
       const userAnswers = res?.data?.userAnswers;
