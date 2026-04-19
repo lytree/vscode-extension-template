@@ -29,16 +29,18 @@ const CollapsibleNavItem: React.FC<{
   return (
     <div className="w-full">
       <div 
-        className={`flex items-center justify-between p-2 hover:bg-muted cursor-pointer transition-colors ${level > 0 ? `pl-${level * 4}` : ''}`}
-        onClick={() => {
-          if (hasChildren) {
-            setIsExpanded(!isExpanded);
-          } else {
-            onItemClick(item);
-          }
-        }}
+        className={`flex items-center justify-between p-2 hover:bg-muted transition-colors ${level > 0 ? `pl-${level * 4}` : ''}`}
       >
-        <div className="flex items-center gap-2">
+        <div 
+          className="flex items-center gap-2 flex-1 cursor-pointer"
+          onClick={() => {
+            if (hasChildren) {
+              setIsExpanded(!isExpanded);
+            } else {
+              onItemClick(item);
+            }
+          }}
+        >
           {hasChildren && (
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
@@ -58,6 +60,19 @@ const CollapsibleNavItem: React.FC<{
           <span className="flex-1 text-foreground">{item.name}</span>
           <span className="text-xs text-muted-foreground">{item.count}</span>
         </div>
+        {level > 0 && (
+          <Button
+            variant="default"
+            size="sm"
+            className="ml-2"
+            onClick={(e) => {
+              e.stopPropagation();
+              onItemClick(item);
+            }}
+          >
+            去练习
+          </Button>
+        )}
       </div>
       
       {hasChildren && isExpanded && (
@@ -107,23 +122,6 @@ export const Home = () => {
   }, []);
 
 
-  const goDetail = ({
-    id,
-    combineKey,
-    type,
-  }: {
-    id?: number;
-    combineKey?: string;
-    type?: number;
-  }) => {
-    navigate("/detail", {
-      state: {
-        id,
-        combineKey,
-        type,
-      },
-    });
-  };
 
   const handleCategoryClick = (item: CategoryItem) => {
     // 处理分类点击

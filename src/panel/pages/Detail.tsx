@@ -40,31 +40,31 @@ function Detail() {
       const message = event.data;
       console.log('Detail received message:', message);
       setLoading(false);
-      
-      if (message.command === "panelInit" || message.command === "detailInit") {
+
+      if ( message.command === "detailInit") {
         const { id, name, type } = message.postData;
         // 处理从 Index 页面传递过来的参数
         console.log("Panel initialized with params:", message.postData);
         // 调用 getQuestion 函数获取问题信息
         getQuestion({ category: setting?.categoryId, id, type });
       }
-      
+
       if (message.command === "getQuestion") {
         setQuestionData(message.data);
         setCombineKey(message.data.combineKey);
       }
-      
+
       if (message.command === "solution") {
         setPage(2);
         setSolutionData(message.data);
       }
-      
+
       if (message.command === "message") {
         // 处理错误消息
         console.error("Error message:", message.data.message);
         alert(message.data.message);
       }
-      
+
       if (message.command === "navigate") {
         // 处理路由跳转
         const { path, state } = message.data;
@@ -74,6 +74,9 @@ function Detail() {
     };
 
     window.addEventListener("message", handleMessage);
+
+    // 向扩展发送路由就绪消息
+    vscode.postMessage({ command: 'detailReady' });
 
     return () => window.removeEventListener("message", handleMessage);
   }, [setting?.categoryId, navigate]);
@@ -223,7 +226,7 @@ function Detail() {
           </Button>
         )}
       </div>
-      
+
       {page === 2 && solutionData && (
         <div className="mb-4 p-3 bg-muted rounded-lg">
           <p className="text-foreground">
@@ -231,7 +234,7 @@ function Detail() {
           </p>
         </div>
       )}
-      
+
       <div className="question-container overflow-y-auto max-h-[calc(100%-120px)]">
         {(list || []).map((item: any, index: number) => {
           if (setting?.categoryId === "shenlun") {
@@ -258,9 +261,9 @@ function Detail() {
           );
         })}
       </div>
-      
-      <CanvasDrawing onClose={() => {}} />
-      
+
+      <CanvasDrawing onClose={() => { }} />
+
       {page === 1 && (
         <div className="mt-4 flex justify-center">
           <Button

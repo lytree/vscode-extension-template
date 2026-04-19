@@ -9,65 +9,146 @@ import {
 } from '../utils/service.js';
 
 export class TemplatePanel {
-  public static currentPanel: TemplatePanel | undefined;
+  private static panels: Map<string, TemplatePanel> = new Map();
   private fenbiChannel: vscode.OutputChannel;
   public isWebviewReady: boolean = false;
   public pendingParams: any = null;
-  public static createOrShow(extensionUri: vscode.Uri, fenbiChannel: vscode.OutputChannel, params?: any) {
-    const column = vscode.window.activeTextEditor?.viewColumn ?? vscode.ViewColumn.One;
+  private cachedQuestionData: any = null;
+  public readonly panelId: string;
+  public readonly panel: vscode.WebviewPanel;
+  private extensionUri: vscode.Uri;
 
-    if (TemplatePanel.currentPanel) {
-      TemplatePanel.currentPanel.panel.reveal(column);
-      // 如果 Panel 已经存在，发送参数
+  public static async createOrShow(extensionUri: vscode.Uri, fenbiChannel: vscode.OutputChannel, params?: any) {
+    const column = vscode.window.activeTextEditor?.viewColumn ?? vscode.ViewColumn.One;
+    const panelId = params?.id?.toString() || Date.now().toString();
+
+    // 如果已存在该 Panel，则显示并更新参数
+    const existingPanel = TemplatePanel.panels.get(panelId);
+    if (existingPanel) {
+      existingPanel.panel.reveal(column);
       if (params) {
-        // 检查 Webview 是否已就绪
-        if (TemplatePanel.currentPanel.isWebviewReady) {
-          TemplatePanel.currentPanel.postMessage({
+        if (existingPanel.isWebviewReady) {
+          existingPanel.postMessage({
             command: "panelInit",
             postData: params
           });
         } else {
-          // 如果 Webview 未就绪，保存参数等待就绪
-          TemplatePanel.currentPanel.pendingParams = params;
+          existingPanel.pendingParams = params;
+        }
+        if (params.name) {
+          existingPanel.panel.title = params.name;
         }
       }
-      return;
+      return panelId;
     }
 
-    const panel = vscode.window.createWebviewPanel('templateWebviewPanel', 'Template Panel', column, {
+    // 如果是 /detail 路由，先获取数据
+    let panelTitle = params?.name || 'Template Panel';
+    let cachedQuestionData: any = null;
+    if (params?.router === "/detail" || !params?.router) {
+      cachedQuestionData = await TemplatePanel.fetchQuestionData(params, fenbiChannel);
+      if (cachedQuestionData) {
+        panelTitle = cachedQuestionData.name || params?.name || 'Panel';
+      }
+    }
+
+    const panel = vscode.window.createWebviewPanel('templateWebviewPanel', panelTitle, column, {
       enableScripts: true,
       retainContextWhenHidden: true,
       localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')]
     });
 
-    TemplatePanel.currentPanel = new TemplatePanel(panel, extensionUri, fenbiChannel, params);
+    const templatePanel = new TemplatePanel(panel, extensionUri, fenbiChannel, params, cachedQuestionData, panelId);
+    TemplatePanel.panels.set(panelId, templatePanel);
+    return panelId;
   }
 
+  private static async fetchQuestionData(params: any, fenbiChannel: vscode.OutputChannel): Promise<any> {
+    try {
+      const category = params?.category || "xingce";
+      const id = params?.id;
 
+      if (!id) return null;
 
-  private constructor(private readonly panel: vscode.WebviewPanel, extensionUri: vscode.Uri, fenbiChannel: vscode.OutputChannel, params?: any) {
-    this.panel.webview.html = renderWebviewHtml(this.panel.webview, extensionUri, 'panel', fenbiChannel);
+      let postCombinKey = "";
+      const idParams: any = { keypointId: id };
+      if (category === "shenlun") {
+        idParams.count = 1;
+      }
+      const idRes = await getExercisesId(category, idParams);
+      postCombinKey = idRes.key;
+
+      const exerciseResult = await getExercisesUrl({
+        category,
+        combineKey: postCombinKey,
+      });
+
+      if (exerciseResult?.code == -1) {
+        fenbiChannel.appendLine(`Fetch question error: ${exerciseResult.message}`);
+        return null;
+      }
+
+      const staticUrl = exerciseResult?.data?.staticUrl?.urls?.[0];
+      const questionResult = await getQuestionService(category, staticUrl);
+
+      const solutionResult = await getSolution(category, postCombinKey);
+
+      questionResult["exerciseId"] = exerciseResult?.data?.ancientExerciseId?.id;
+      questionResult["combinKey"] = postCombinKey;
+      questionResult["solutions"] = solutionResult.data?.solutions || [];
+
+      return questionResult;
+    } catch (error) {
+      fenbiChannel.appendLine(`Error fetching question data: ${error}`);
+      return null;
+    }
+  }
+
+  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, fenbiChannel: vscode.OutputChannel, params?: any, cachedQuestionData?: any, panelId?: string) {
+    this.panel = panel;
+    this.extensionUri = extensionUri;
     this.fenbiChannel = fenbiChannel;
     this.pendingParams = params;
+    this.cachedQuestionData = cachedQuestionData;
+    this.panelId = panelId || Date.now().toString();
 
-    // 监听来自 Webview 的消息
+    this.panel.webview.html = renderWebviewHtml(this.panel.webview, extensionUri, 'panel', fenbiChannel);
+
     this.panel.webview.onDidReceiveMessage((message: { [key: string]: any }) => {
       const { postData = {}, command = "" } = message || {};
-      this.fenbiChannel.appendLine(`Panel received message: ${command} with data: ${JSON.stringify(postData)}`);
 
       if (command === "panelReady") {
         this.isWebviewReady = true;
-        this.fenbiChannel.appendLine("Webview is ready");
-        // 如果有等待的参数，发送 routerInit 消息
+        this.fenbiChannel.appendLine(`Panel ${this.panelId} is ready`);
         if (this.pendingParams) {
+          const router = this.pendingParams.router || "/detail";
           this.postMessage({
             command: `routerInit`,
             postData: {
               ...this.pendingParams,
-              router: "/detail"
+              router
             }
           });
-          this.pendingParams = null;
+        }
+      }
+      if (command === "detailReady") {
+        this.fenbiChannel.appendLine(`Panel ${this.panelId} detail page ready`);
+        if (this.cachedQuestionData) {
+          this.fenbiChannel.appendLine(`Sending cached question data to panel ${this.panelId}`);
+          this.panel.webview.postMessage({
+            command: "getQuestion",
+            data: this.cachedQuestionData
+          });
+          this.cachedQuestionData = null;
+        } else {
+          this.postMessage({
+            command: "detailInit",
+            postData: {
+              category: this.pendingParams?.category || "xingce",
+              id: this.pendingParams?.id || 0,
+              type: this.pendingParams?.type || 1
+            }
+          });
         }
       }
       if (this.isWebviewReady) {
@@ -83,17 +164,18 @@ export class TemplatePanel {
     });
 
     this.panel.onDidDispose(() => {
-      TemplatePanel.currentPanel = undefined;
+      TemplatePanel.panels.delete(this.panelId);
+      this.fenbiChannel.appendLine(`Panel ${this.panelId} disposed, remaining panels: ${TemplatePanel.panels.size}`);
     });
   }
 
   // 处理 getQuestion 请求
   private async getQuestion({
-    category,
+    category, combineKey,
     id,
-  }: { category: string; id: number }) {
+  }: { category: string; combineKey?: string; id: number }) {
     try {
-      let postCombinKey = "";
+      let postCombinKey = combineKey || "";
 
       if (!postCombinKey) {
         const params = {

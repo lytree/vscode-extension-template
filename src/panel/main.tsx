@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-route
 import Detail from './pages/Detail.tsx'
 import Answer from './pages/Answer.tsx'
 import { getVscodeApi } from '../view/utils/vscodeApi'
-
+import "@/styles.css";
 const vscode = getVscodeApi()
 
 function App() {

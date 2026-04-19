@@ -14,17 +14,17 @@ const ENTRY_KEY: Record<PageType, string> = {
   view: 'src/view/main.tsx'
 };
 
-export function renderWebviewHtml(webview: vscode.Webview, extensionUri: vscode.Uri, page: PageType, fenbiChannel: vscode.OutputChannel): string {
+export function renderWebviewHtml(webview: vscode.Webview, extensionUri: vscode.Uri, page: PageType, fenbiChannel: vscode.OutputChannel, manifestName: string = 'manifest.json'): string {
 
   const nonce = getNonce();
-  const manifest = loadManifest(extensionUri);
+  const manifest = loadManifest(extensionUri, manifestName);
   const entry = manifest[ENTRY_KEY[page]] as ManifestItem | undefined;
   if (!entry) {
-    fenbiChannel.appendLine(`Missing Vite manifest entry for ${ENTRY_KEY[page]}. Please run: pnpm run compile:web`);
-    throw new Error(`Missing Vite manifest entry for ${ENTRY_KEY[page]}. Please run: pnpm run compile:web`);
+    fenbiChannel.appendLine(`Missing Vite manifest entry for ${ENTRY_KEY[page]} in ${manifestName}. Please run: pnpm run compile:web`);
+    throw new Error(`Missing Vite manifest entry for ${ENTRY_KEY[page]} in ${manifestName}. Please run: pnpm run compile:web`);
   }
   const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', entry.file));
-  const cssFiles = entry.css || [];
+  const cssFiles = collectCssFiles(manifest, entry);
   const styleUris = cssFiles.map(cssFile => webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', cssFile)));
 
 
@@ -66,7 +66,7 @@ export function renderWebviewHtml(webview: vscode.Webview, extensionUri: vscode.
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';font-src ${webview.cspSource}" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';font-src ${webview.cspSource};img-src ${webview.cspSource} https://*.fenbike.cn https://*.fbstatic.cn" />
     <style nonce="${nonce}">${fontFaceStyles}</style>
     ${styleUris.map(uri => `<link rel="stylesheet" href="${uri}" />`).join('\n    ')}
   </head>
@@ -77,14 +77,59 @@ export function renderWebviewHtml(webview: vscode.Webview, extensionUri: vscode.
 </html>`;
 }
 
-function loadManifest(extensionUri: vscode.Uri): Record<string, unknown> {
-  const manifestPath = path.join(extensionUri.fsPath, 'media', '.vite', 'manifest.json');
+function loadManifest(extensionUri: vscode.Uri, manifestName: string = 'manifest.json'): Record<string, unknown> {
+  const manifestPath = path.join(extensionUri.fsPath, 'media', '.vite', manifestName);
   if (!fs.existsSync(manifestPath)) {
-    throw new Error('Vite manifest not found. Run `pnpm run compile:web` first.');
+    throw new Error(`Vite manifest ${manifestName} not found. Run "pnpm run compile:web" first.`);
   }
 
   const raw = fs.readFileSync(manifestPath, 'utf8');
   return JSON.parse(raw) as Record<string, unknown>;
+}
+
+function collectCssFiles(manifest: Record<string, unknown>, entry: any): string[] {
+  const cssFiles = new Set<string>();
+  const visited = new Set<string>();
+
+  function traverse(item: any) {
+    if (!item) return;
+    
+    // 使用不同的键来标识项目，确保兼容性
+    const itemId = item.src || item.id || item.file;
+    if (itemId && visited.has(itemId)) return;
+    if (itemId) visited.add(itemId);
+
+    // 收集当前项的 CSS 文件 - 支持不同格式的 manifest
+    if (item.css && Array.isArray(item.css)) {
+      item.css.forEach((cssFile: string) => cssFiles.add(cssFile));
+    }
+    // 处理可能的其他 CSS 字段格式
+    else if (item.styles && Array.isArray(item.styles)) {
+      item.styles.forEach((cssFile: string) => cssFiles.add(cssFile));
+    }
+
+    // 递归遍历依赖项 - 支持不同格式的依赖字段
+    if (item.imports && Array.isArray(item.imports)) {
+      item.imports.forEach((importKey: string) => {
+        const importedItem = manifest[importKey];
+        if (importedItem) {
+          traverse(importedItem);
+        }
+      });
+    }
+    // 处理可能的其他依赖字段格式
+    else if (item.dependencies && Array.isArray(item.dependencies)) {
+      item.dependencies.forEach((importKey: string) => {
+        const importedItem = manifest[importKey];
+        if (importedItem) {
+          traverse(importedItem);
+        }
+      });
+    }
+  }
+
+  traverse(entry);
+  return Array.from(cssFiles);
 }
 
 function getNonce(): string {
