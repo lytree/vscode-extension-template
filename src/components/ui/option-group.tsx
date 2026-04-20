@@ -35,19 +35,19 @@ interface OptionGroupProps {
  *    - 允许多个选项被选中
  */
 
-function OptionGroup({ 
-  type, 
-  value, 
-  onValueChange, 
-  options, 
-  className, 
+function OptionGroup({
+  type,
+  value,
+  onValueChange,
+  options,
+  className,
   optionClassName,
   showExclude = false,
   onExcludeChange,
   initialExcludedMap = {}
 }: OptionGroupProps) {
   const [excludedMap, setExcludedMap] = React.useState<Record<string, boolean>>(initialExcludedMap);
-  
+
   // 使用 useRef 存储定时器字典，避免触发不必要的渲染
   // 在 Webview/浏览器环境下，使用 window.setTimeout 的返回类型 number
   const timers = React.useRef<Record<string, number>>({});
@@ -115,7 +115,7 @@ function OptionGroup({
       console.log(`项目 ${id} 触发长按逻辑`);
       // 触发长按操作
       handleLongPressAction(id);
-      
+
       // 触发后清理 ID
       delete timers.current[id];
     }, 800);
@@ -131,7 +131,7 @@ function OptionGroup({
         {options.map((option, index) => {
           const excluded = isExcluded(option.value);
           const checked = isChecked(option.value);
-          
+
           return (
             <div
               key={option.value}
@@ -155,7 +155,7 @@ function OptionGroup({
                 )}>
                   {getOptionLabel(index)}
                 </div>
-                <span 
+                <span
                   className={cn(
                     "flex-1",
                     excluded && "line-through",
@@ -173,11 +173,6 @@ function OptionGroup({
                 onChange={() => handleRadioChange(option.value)}
                 className="sr-only"
               />
-              {checked && (
-                <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-sm">
-                  <div className="w-2 h-2 rounded-full bg-white" />
-                </div>
-              )}
               {showExclude && (
                 <Button
                   size="sm"
@@ -203,7 +198,7 @@ function OptionGroup({
       {options.map((option, index) => {
         const excluded = isExcluded(option.value);
         const checked = isChecked(option.value);
-        
+
         return (
           <div
             key={option.value}
@@ -227,7 +222,7 @@ function OptionGroup({
               )}>
                 {getOptionLabel(index)}
               </div>
-              <span 
+              <span
                 className={cn(
                   "flex-1",
                   excluded && "line-through",
