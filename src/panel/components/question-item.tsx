@@ -20,25 +20,28 @@ export const QuestionItem = (props: TQuestionItemProps) => {
     {},
   );
 
+  const [selectedAnswers, setSelectedAnswers] = React.useState<Record<number, string | string[]>>({});
+
   const { setting } = useSetting();
 
   return (
     <div>
       {(data || []).map((ele: TSolutionItem, index: number) => {
 
-        // 处理用户答案
-        let userAnswer: string | string[] | undefined;
-        if (isMultipleChoice) {
-          // 多选：将用户答案转换为数组
-          if (ele?.userAnswer?.choice) {
-            userAnswer = Array.isArray(ele.userAnswer.choice)
-              ? ele.userAnswer.choice.map(c => c.toString())
-              : [ele.userAnswer.choice.toString()];
-          }
-        } else {
-          // 单选：将用户答案转换为字符串
-          userAnswer = ele?.userAnswer?.choice ? ele.userAnswer.choice.toString() : undefined;
-        }
+        // 从状态中获取选中的答案，如果没有则使用初始值
+        const currentAnswer = selectedAnswers[index] !== undefined 
+          ? selectedAnswers[index] 
+          : (() => {
+              if (isMultipleChoice) {
+                if (ele?.userAnswer?.choice) {
+                  return Array.isArray(ele.userAnswer.choice)
+                    ? ele.userAnswer.choice.map(c => c.toString())
+                    : [ele.userAnswer.choice.toString()];
+                }
+              } else {
+                return ele?.userAnswer?.choice ? ele.userAnswer.choice.toString() : undefined;
+              }
+            })();
 
         return (
           <div>
@@ -71,8 +74,14 @@ export const QuestionItem = (props: TQuestionItemProps) => {
                     <div key={ind}>
                       <OptionGroup
                         type={isMultipleChoice ? "checkbox" : "radio"}
-                        value={userAnswer}
+                        value={currentAnswer}
                         onValueChange={(value) => {
+                          // 更新本地状态
+                          setSelectedAnswers(prev => ({
+                            ...prev,
+                            [index]: value
+                          }));
+
                           if (isMultipleChoice) {
                             // 多选：将值转换为数组
                             const choices = Array.isArray(value)
