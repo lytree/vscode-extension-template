@@ -60,19 +60,18 @@ const CollapsibleNavItem: React.FC<{
           <span className="flex-1 text-foreground">{item.name}</span>
           <span className="text-xs text-muted-foreground">{item.count}</span>
         </div>
-        {level > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="ml-2"
-            onClick={(e) => {
-              e.stopPropagation();
-              onItemClick(item);
-            }}
-          >
-            去练习
-          </Button>
-        )}
+
+        <Button
+          variant="ghost"
+          size="sm"
+          className="ml-2"
+          onClick={(e) => {
+            e.stopPropagation();
+            onItemClick(item);
+          }}
+        >
+          去练习
+        </Button>
       </div>
 
       {hasChildren && isExpanded && (
