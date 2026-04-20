@@ -5,104 +5,9 @@
 /* 语义层（推荐） */
 @import "./semantic.css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.vscode-dark  *));
 
-:root {
-    color-scheme: light dark;
-    /* 使用 semantic.css 中定义的语义化变量 */
-    --background: var(--color-background);
-    --foreground: var(--color-foreground);
-    --card: var(--color-card);
-    --card-foreground: var(--color-card-foreground);
-    --popover: var(--color-popover);
-    --popover-foreground: var(--color-popover-foreground);
-    --primary: var(--color-primary);
-    --primary-foreground: var(--color-primary-foreground);
-    --secondary: var(--color-secondary);
-    --secondary-foreground: var(--color-secondary-foreground);
-    --muted: var(--color-muted);
-    --muted-foreground: var(--color-muted-foreground);
-    --accent: var(--color-accent);
-    --accent-foreground: var(--color-accent-foreground);
-    --destructive: var(--color-destructive);
-    --destructive-foreground: var(--color-destructive-foreground);
-    --border: var(--color-border);
-    --input: var(--color-input);
-    --ring: var(--color-ring);
-    --chart-1: var(--color-chart-1);
-    --chart-2: var(--color-chart-2);
-    --chart-3: var(--color-chart-3);
-    --chart-4: var(--color-chart-4);
-    --chart-5: var(--color-chart-5);
-    --radius: 0.625rem;
-    --sidebar: var(--color-sidebar);
-    --sidebar-foreground: var(--color-sidebar-foreground);
-    --sidebar-primary: var(--color-sidebar-primary);
-    --sidebar-primary-foreground: var(--color-sidebar-primary-foreground);
-    --sidebar-accent: var(--color-sidebar-accent);
-    --sidebar-accent-foreground: var(--color-sidebar-accent-foreground);
-    --sidebar-border: var(--color-sidebar-border);
-    --sidebar-ring: var(--color-sidebar-ring);
-}
 
-@theme inline {
-    --font-heading: var(--font-sans);
-    --font-sans: 'Geist Variable', sans-serif;
-    --color-sidebar-ring: var(--sidebar-ring);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar: var(--sidebar);
-    --color-chart-5: var(--chart-5);
-    --color-chart-4: var(--chart-4);
-    --color-chart-3: var(--chart-3);
-    --color-chart-2: var(--chart-2);
-    --color-chart-1: var(--chart-1);
-    --color-ring: var(--ring);
-    --color-input: var(--input);
-    --color-border: var(--border);
-    --color-destructive: var(--destructive);
-    --color-accent-foreground: var(--accent-foreground);
-    --color-accent: var(--accent);
-    --color-muted-foreground: var(--muted-foreground);
-    --color-muted: var(--muted);
-    --color-secondary-foreground: var(--secondary-foreground);
-    --color-secondary: var(--secondary);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-primary: var(--primary);
-    --color-popover-foreground: var(--popover-foreground);
-    --color-popover: var(--popover);
-    --color-card-foreground: var(--card-foreground);
-    --color-card: var(--card);
-    --color-foreground: var(--foreground);
-    --color-background: var(--background);
-    --radius-sm: var(--radius-sm);
-    --radius-md: var(--radius-md);
-    --radius-lg: var(--radius-lg);
-    --radius-xl: var(--radius-xl);
-    --radius-2xl: var(--radius-2xl);
-    --radius-3xl: var(--radius-3xl);
-    --radius-4xl: var(--radius-4xl);
-}
-
-/* 移除默认的 dark 类，因为我们现在使用 VSCode 的主题变量 */
-
-@layer base {
-    * {
-        @apply border-border outline-ring/50;
-    }
-
-    body {
-        @apply bg-background text-foreground;
-    }
-
-    html {
-        @apply font-sans;
-    }
-}
 
 body {
     margin: 0;
@@ -151,7 +56,7 @@ code {
 .question-item {
     margin-bottom: 20px;
     padding: 10px;
-    border: 1px solid #ffffff;
+    /* border: 1px solid #ffffff; */
     border-radius: 5px;
 }
 
@@ -163,7 +68,7 @@ code {
 .solution-container {
     margin-top: 10px;
     padding: 10px;
-    background-color: rgba(255, 255, 255, 0.1);
+    /* background-color: rgba(255, 255, 255, 0.1); */
     border-radius: 5px;
 }
 
@@ -196,45 +101,6 @@ code {
 .question-container {
     max-width: 800px;
     margin: 0 auto;
-}
-
-.top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.question-item {
-    margin-bottom: 20px;
-    padding: 10px;
-    border: 1px solid #ffffff;
-    border-radius: 5px;
-}
-
-.answer-item {
-    margin-top: 10px;
-    margin-left: 20px;
-}
-
-.solution-container {
-    margin-top: 10px;
-    padding: 10px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 5px;
-}
-
-.solution {
-    margin-top: 10px;
-    line-height: 1.5;
-}
-
-.green {
-    color: #52c41a;
-}
-
-.red {
-    color: #ff4d4f;
 }
 
 .layout {

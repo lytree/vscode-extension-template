@@ -50,6 +50,13 @@ export class TemplatePanel {
       if (cachedQuestionData) {
         panelTitle = cachedQuestionData.name || params?.name || 'Panel';
       }
+    } else if (params?.router === "/answer") {
+      cachedQuestionData = await TemplatePanel.fetchQuestionData(params, fenbiChannel);
+      if (cachedQuestionData) {
+        panelTitle = cachedQuestionData.name || params?.name || 'Panel';
+      }
+    } else {
+      panelTitle = params?.name || 'Panel';
     }
 
     const panel = vscode.window.createWebviewPanel('templateWebviewPanel', panelTitle, column, {
@@ -143,6 +150,26 @@ export class TemplatePanel {
         } else {
           this.postMessage({
             command: "detailInit",
+            postData: {
+              category: this.pendingParams?.category || "xingce",
+              id: this.pendingParams?.id || 0,
+              type: this.pendingParams?.type || 1
+            }
+          });
+        }
+      }
+      if (command === "answerReady") {
+        this.fenbiChannel.appendLine(`Panel ${this.panelId} detail page ready`);
+        if (this.cachedQuestionData) {
+          this.fenbiChannel.appendLine(`Sending cached question data to panel ${this.panelId}`);
+          this.panel.webview.postMessage({
+            command: "getQuestion",
+            data: this.cachedQuestionData
+          });
+          this.cachedQuestionData = null;
+        } else {
+          this.postMessage({
+            command: "answerInit",
             postData: {
               category: this.pendingParams?.category || "xingce",
               id: this.pendingParams?.id || 0,

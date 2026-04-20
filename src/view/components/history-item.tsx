@@ -24,7 +24,7 @@ export const HistoryItem = (props: {
         </div>
         <div>
           <Button
-            variant="default"
+            variant="secondary"
             onClick={() => {
               if (data?.status == 1) {
                 navigate("/answer", {

@@ -30,7 +30,7 @@ export const QuestionCount = (props: {
   return (
     <div>
       <Button
-        variant="default"
+        variant="secondary"
         onClick={() => setOpen(true)}
       >
         设置每组出题数量
@@ -58,7 +58,7 @@ export const QuestionCount = (props: {
               <Button variant="ghost" onClick={onCancel}>
                 取消
               </Button>
-              <Button variant="default" onClick={onSubmit}>
+              <Button variant="secondary" onClick={onSubmit}>
                 确定
               </Button>
             </div>

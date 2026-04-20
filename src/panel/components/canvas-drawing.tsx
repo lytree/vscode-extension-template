@@ -2,7 +2,25 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 
 export function CanvasDrawing({ onClose }: { onClose: () => void }) {
-  return <CanvasDraw onClose={onClose} />;
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  const openCanvas = () => {
+    setIsOpen(true);
+  };
+
+  const closeCanvas = () => {
+    setIsOpen(false);
+    onClose();
+  };
+
+  return (
+    <>
+      <Button onClick={openCanvas} variant="secondary" className="mt-4">
+        打开画板
+      </Button>
+      {isOpen && <CanvasDraw onClose={closeCanvas} />}
+    </>
+  );
 }
 
 const CanvasDraw = ({ onClose }: { onClose: () => void }) => {
@@ -109,10 +127,10 @@ const CanvasDraw = ({ onClose }: { onClose: () => void }) => {
       />
 
       <div style={{ position: "fixed", top: 0, right: 0, zIndex: 999, display: "flex", gap: 2 }}>
-        <Button onClick={onClose} variant="default">
+        <Button onClick={onClose} variant="secondary">
           关闭画板
         </Button>
-        <Button onClick={clearCanvas} variant="default">
+        <Button onClick={clearCanvas} variant="secondary">
           清空
         </Button>
       </div>

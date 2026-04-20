@@ -23,15 +23,15 @@ const CollapsibleNavItem: React.FC<{
   onItemClick: (item: CategoryItem) => void;
 }> = ({ item, level, onItemClick }) => {
   const [isExpanded, setIsExpanded] = React.useState(false);
-  
+
   const hasChildren = item.children && item.children.length > 0;
-  
+
   return (
     <div className="w-full">
-      <div 
+      <div
         className={`flex items-center justify-between p-2 hover:bg-muted transition-colors ${level > 0 ? `pl-${level * 4}` : ''}`}
       >
-        <div 
+        <div
           className="flex items-center gap-2 flex-1 cursor-pointer"
           onClick={() => {
             if (hasChildren) {
@@ -42,16 +42,16 @@ const CollapsibleNavItem: React.FC<{
           }}
         >
           {hasChildren && (
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              width="14" 
-              height="14" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
               className={`text-primary transition-transform ${isExpanded ? 'rotate-180' : ''}`}
             >
               <polyline points="6 9 12 15 18 9"></polyline>
@@ -62,7 +62,7 @@ const CollapsibleNavItem: React.FC<{
         </div>
         {level > 0 && (
           <Button
-            variant="default"
+            variant="ghost"
             size="sm"
             className="ml-2"
             onClick={(e) => {
@@ -74,14 +74,14 @@ const CollapsibleNavItem: React.FC<{
           </Button>
         )}
       </div>
-      
+
       {hasChildren && isExpanded && (
         <div className="w-full">
-          {item.children.map((child) => (
-            <CollapsibleNavItem 
-              key={child.id} 
-              item={child} 
-              level={level + 1} 
+          {item.children?.map((child) => (
+            <CollapsibleNavItem
+              key={child.id}
+              item={child}
+              level={level + 1}
               onItemClick={onItemClick}
             />
           ))}
@@ -102,7 +102,7 @@ export const Home = () => {
     // 监听来自扩展的消息
     const handleMessage = (event: any) => {
       const message = event.data;
-      
+
       if (message.command === "init") {
         // 使用从扩展获取的分类数据
         setCategories(message.data.menu || []);
@@ -110,12 +110,12 @@ export const Home = () => {
         setLoading(false);
       }
     };
-    
+
     window.addEventListener("message", handleMessage);
-    
+
     // 初始化时请求数据
     vscode.postMessage({ command: "pageInit" });
-    
+
     return () => {
       window.removeEventListener("message", handleMessage);
     };
@@ -124,9 +124,6 @@ export const Home = () => {
 
 
   const handleCategoryClick = (item: CategoryItem) => {
-    // 处理分类点击
-    console.log('Category clicked:', item.name, item.id);
-    
     // 发送消息到扩展，创建 Panel 并传入参数
     vscode.postMessage({
       command: "createPanel",
@@ -137,13 +134,13 @@ export const Home = () => {
         router: "/detail",
       }
     });
-    
+
     // // 这里可以根据需要跳转到详情页或执行其他操作
     // goDetail({ id: item.id, type: 1 });
   };
 
   return (
-    <div className="h-full bg-card rounded-lg shadow-sm">
+    <div className="h-full rounded-lg shadow-sm">
       {loading ? (
         <div className="flex justify-center items-center h-32">
           <div className="text-sm text-muted-foreground">Index loading...</div>
@@ -151,20 +148,19 @@ export const Home = () => {
       ) : (
         <div className="h-full flex flex-col">
           {/* 标题栏 */}
-          <div className="bg-primary text-primary-foreground p-3 flex justify-between items-center rounded-t-lg">
+          <div className="  p-3 flex justify-between items-center rounded-t-lg">
             <div className="flex items-center gap-2">
               <span className="text-lg font-semibold">专项练习</span>
               <div className="bg-primary/80 p-1 rounded">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
                 </svg>
               </div>
             </div>
             <Button
               variant="ghost"
               size="sm"
-              className="text-primary-foreground hover:bg-primary/80"
               onClick={() => {
                 // 自定义刷题功能
                 goDetail({
@@ -175,15 +171,15 @@ export const Home = () => {
               自定义刷题
             </Button>
           </div>
-          
+
           {/* 分类列表 */}
           <div className="flex-1 overflow-y-auto p-2">
             <div className="space-y-1">
               {categories.map((category) => (
                 <div key={category.id} className="border-b border-border last:border-b-0">
-                  <CollapsibleNavItem 
-                    item={category} 
-                    level={0} 
+                  <CollapsibleNavItem
+                    item={category}
+                    level={0}
                     onItemClick={handleCategoryClick}
                   />
                 </div>

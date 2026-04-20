@@ -2,11 +2,12 @@ import * as React from "react";
 import type { TSolutionData, TQuestionData, TQuestionItem } from "../../types";
 import { QuestionItem } from "../components/question-item";
 import { ShenlunItem } from "../components/shenlun-item";
-import { CanvasDrawing } from "../../view/components/canvas-drawing";
+import { CanvasDrawing } from "../components/canvas-drawing";
 import { useSetting } from "../../view/components/hooks";
 import { getVscodeApi } from "../../view/utils/vscodeApi";
 import { Button } from "../../components/ui/button";
 import { Skeleton } from "../../components/ui/skeleton";
+import { LoadingSpinner } from "../../components/ui/loading-spinner";
 import { groupByMaterialIndexesTo2DArray } from "../../view/utils/analyze";
 import { useNavigate } from "react-router-dom";
 
@@ -17,7 +18,10 @@ interface TLastAnswerRecord {
 }
 
 const vscode = getVscodeApi();
-
+/**
+ * 答题界面
+ * @returns 
+ */
 function Detail() {
   const { setting } = useSetting();
   const navigate = useNavigate();
@@ -31,7 +35,6 @@ function Detail() {
   const [loading, setLoading] = React.useState(true);
   const [page, setPage] = React.useState<number>(1);
   const [questionData, setQuestionData] = React.useState<TQuestionData | null>(null);
-  const [solutionData, setSolutionData] = React.useState<TSolutionData | null>(null);
   const [combineKey, setCombineKey] = React.useState<string>("");
 
   // 统一处理所有消息
@@ -41,7 +44,7 @@ function Detail() {
       console.log('Detail received message:', message);
       setLoading(false);
 
-      if ( message.command === "detailInit") {
+      if (message.command === "detailInit") {
         const { id, name, type } = message.postData;
         // 处理从 Index 页面传递过来的参数
         console.log("Panel initialized with params:", message.postData);
@@ -52,11 +55,6 @@ function Detail() {
       if (message.command === "getQuestion") {
         setQuestionData(message.data);
         setCombineKey(message.data.combineKey);
-      }
-
-      if (message.command === "solution") {
-        setPage(2);
-        setSolutionData(message.data);
       }
 
       if (message.command === "message") {
@@ -175,16 +173,6 @@ function Detail() {
     questionData?.questions || []
   );
 
-  const solutions = groupByMaterialIndexesTo2DArray(
-    solutionData?.solutions || []
-  );
-
-  const obj: { [key: string]: any[] } = {
-    1: questions,
-    2: solutions,
-  };
-
-  const list = obj[page];
 
   if (loading) {
     return (
@@ -202,41 +190,32 @@ function Detail() {
 
   return (
     <div className="h-full bg-card p-4" style={{ color: setting?.color, fontSize: setting?.fontSize }}>
+      <h1 className="text-lg font-medium"></h1>
       <div className="top-bar flex justify-between items-center mb-4">
         <Button
+          variant="secondary"
           onClick={onBack}
-          className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
         >
           返回上一页
         </Button>
-        {page === 1 && (
+
+        <div className="mt-4 flex justify-center">
           <Button
+            variant="secondary"
             onClick={onSubmit}
-            className="bg-primary text-primary-foreground hover:bg-primary/80"
           >
             交卷
           </Button>
-        )}
-        {page === 2 && (
           <Button
+            variant="secondary"
             onClick={onJump}
-            className="bg-primary text-primary-foreground hover:bg-primary/80"
           >
             跳转粉笔网址
           </Button>
-        )}
-      </div>
-
-      {page === 2 && solutionData && (
-        <div className="mb-4 p-3 bg-muted rounded-lg">
-          <p className="text-foreground">
-            答对题目数：{solutionData.correctCount} / {solutionData.questionCount}
-          </p>
         </div>
-      )}
-
+      </div>
       <div className="question-container overflow-y-auto max-h-[calc(100%-120px)]">
-        {(list || []).map((item: any, index: number) => {
+        {(questions || []).map((item: any, index: number) => {
           if (setting?.categoryId === "shenlun") {
             return (
               <div key={`${page}-${index}`} className="question-item mb-6">
@@ -263,18 +242,8 @@ function Detail() {
       </div>
 
       <CanvasDrawing onClose={() => { }} />
-
-      {page === 1 && (
-        <div className="mt-4 flex justify-center">
-          <Button
-            onClick={onSubmit}
-            className="bg-primary text-primary-foreground hover:bg-primary/80"
-          >
-            交卷
-          </Button>
-        </div>
-      )}
     </div>
+
   );
 }
 

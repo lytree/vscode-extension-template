@@ -5,7 +5,7 @@ import { ShenlunItem } from "../components/shenlun-item";
 import { useSetting } from "../../view/components/hooks";
 import { getVscodeApi } from "../../view/utils/vscodeApi";
 import { Button } from "../../components/ui/button";
-import { Skeleton } from "../../components/ui/skeleton";
+import { Card, CardHeader, CardTitle, CardAction, CardContent } from "../../components/ui/card";
 import { groupByMaterialIndexesTo2DArray } from "../../view/utils/analyze";
 import { useNavigate } from "react-router-dom";
 
@@ -16,7 +16,10 @@ interface TLastAnswerRecord {
 }
 
 const vscode = getVscodeApi();
-
+/**
+ * 结果界面
+ * @returns 
+ */
 function Answer() {
   const { setting } = useSetting();
   const navigate = useNavigate();
@@ -39,30 +42,30 @@ function Answer() {
       const message = event.data;
       console.log('Answer received message:', message);
       setLoading(false);
-      
-      if (message.command === "panelInit" || message.command === "answerInit") {
+
+      if (message.command === "answerInit") {
         const { id, name, type } = message.postData;
         // 处理从 Index 页面传递过来的参数
         console.log("Panel initialized with params:", message.postData);
         // 调用 getSolution 函数获取问题信息
         getSolution({ category: setting?.categoryId, id, type });
       }
-      
+
       if (message.command === "getQuestion") {
         setQuestionData(message.data);
         setCombineKey(message.data.combineKey);
       }
-      
+
       if (message.command === "solution") {
         setSolutionData(message.data);
       }
-      
+
       if (message.command === "message") {
         // 处理错误消息
         console.error("Error message:", message.data.message);
         alert(message.data.message);
       }
-      
+
       if (message.command === "navigate") {
         // 处理路由跳转
         const { path, state } = message.data;
@@ -72,6 +75,8 @@ function Answer() {
     };
 
     window.addEventListener("message", handleMessage);
+    // 向扩展发送路由就绪消息
+    vscode.postMessage({ command: 'answerReady' });
 
     return () => window.removeEventListener("message", handleMessage);
   }, [setting?.categoryId, navigate]);
@@ -122,74 +127,172 @@ function Answer() {
     });
   };
 
+  const onSetting = () => {
+    // 打开设置
+    vscode.postMessage({ command: "openSetting" });
+  };
+
+  const onDownload = () => {
+    // 下载功能
+    vscode.postMessage({ command: "download" });
+  };
+
+  const onSubmit = () => {
+    // 交卷功能
+    vscode.postMessage({ command: "submit" });
+  };
+
   const solutions = groupByMaterialIndexesTo2DArray(
     solutionData?.solutions || []
   );
 
-  if (loading) {
-    return (
-      <div className="h-full bg-card p-4 flex items-center justify-center" style={{ color: setting?.color, fontSize: setting?.fontSize }}>
-        <div className="flex flex-col items-center">
-          <div className="space-y-2">
-            <Skeleton className="h-8 w-8 rounded-full" />
-            <Skeleton className="h-4 w-32" />
-          </div>
-          <p className="text-foreground mt-4">加载中...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="h-full bg-card p-4" style={{ color: setting?.color, fontSize: setting?.fontSize }}>
-      <div className="top-bar flex justify-between items-center mb-4">
-        <Button
-          onClick={onBack}
-          className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
-        >
-          返回上一页
-        </Button>
-        <Button
-          onClick={onJump}
-          className="bg-primary text-primary-foreground hover:bg-primary/80"
-        >
-          跳转粉笔网址
-        </Button>
-      </div>
-      
-      {solutionData && (
-        <div className="mb-4 p-3 bg-muted rounded-lg">
-          <p className="text-foreground">
-            答对题目数：{solutionData.correctCount} / {solutionData.questionCount}
-          </p>
+    <div className="h-full bg-card flex flex-col" style={{ color: setting?.color, fontSize: setting?.fontSize }}>
+      {/* 顶部标题栏 */}
+      <div className="top-bar flex justify-between items-center p-4 border-b border-border">
+        <h1 className="text-lg font-medium"></h1>
+        <div className="flex gap-2">
+          <Button
+            onClick={onSetting}
+            className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+          >
+            设置
+          </Button>
+          <Button variant="secondary"
+            onClick={onDownload}
+            className="text-secondary-foreground hover:bg-secondary/80"
+          >
+            下载
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={onSubmit}
+            className="text-primary-foreground hover:bg-primary/80"
+          >
+            交卷
+          </Button>
         </div>
-      )}
-      
-      <div className="question-container overflow-y-auto max-h-[calc(100%-120px)]">
+      </div>
+
+      {/* 题目容器 */}
+      <div className="question-container flex-1 overflow-y-auto p-4">
         {(solutions || []).map((item: any, index: number) => {
           if (setting?.categoryId === "shenlun") {
             return (
-              <div key={`${page}-${index}`} className="question-item mb-6">
-                <ShenlunItem
-                  onChange={onShenlunChange}
+              <Card key={`${page}-${index}`} className="mb-6 rounded-lg shadow-sm">
+                <CardHeader className="flex justify-between items-start gap-4 pb-2">
+                  <CardTitle className="flex items-center gap-2">
+                    <span className="text-primary font-medium">{index + 1}.</span>
+                    <span className="text-sm text-muted-foreground">单选题</span>
+                  </CardTitle>
+                  <CardAction className="flex gap-2">
+                    <Button
+                      size="sm"
+                      className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                    >
+                      标
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                    >
+                      记
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                    >
+                      ★
+                    </Button>
+                  </CardAction>
+                </CardHeader>
+                <CardContent>
+                  <ShenlunItem
+                    onChange={onShenlunChange}
+                    data={item}
+                    index={index}
+                    materials={questionData?.materials || []}
+                  />
+                </CardContent>
+              </Card>
+            );
+          }
+          return (
+            <Card key={`${page}-${index}`} className="mb-6 rounded-lg shadow-sm">
+              <CardHeader className="flex justify-between items-start gap-4 pb-2">
+                <CardTitle className="flex items-center gap-2">
+                  <span className="text-primary font-medium">{index + 1}.</span>
+                  <span className="text-sm text-muted-foreground">单选题</span>
+                </CardTitle>
+                <CardAction className="flex gap-2">
+                  <Button
+                    size="sm"
+                    className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                  >
+                    标
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                  >
+                    记
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                  >
+                    ★
+                  </Button>
+                </CardAction>
+              </CardHeader>
+              <CardContent>
+                <QuestionItem
+                  onChange={() => { }}
                   data={item}
                   index={index}
                   materials={questionData?.materials || []}
                 />
-              </div>
-            );
-          }
-          return (
-            <div key={`${page}-${index}`} className="question-item mb-6">
-              <QuestionItem
-                onChange={() => {}}
-                data={item}
-                index={index}
-                materials={questionData?.materials || []}
-              />
-            </div>
+              </CardContent>
+            </Card>
           );
         })}
+      </div>
+
+      {/* 底部答题卡 */}
+      <div className="bottom-bar border-t border-border p-4 bg-card">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={onBack}
+              className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            >
+              返回上一页
+            </Button>
+            <Button
+              onClick={onJump}
+              className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            >
+              跳转粉笔网址
+            </Button>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="text-sm">
+              答题卡
+              <span className="text-muted-foreground ml-2">{solutionData?.correctCount || 0}/{solutionData?.questionCount || 0}</span>
+            </div>
+            <div className="flex gap-1">
+              {Array.from({ length: solutionData?.questionCount || 0 }, (_, i) => (
+                <Button
+                  key={i}
+                  size="sm"
+                  className="w-6 h-6 p-0 flex items-center justify-center"
+                >
+                  {i + 1}
+                </Button>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
