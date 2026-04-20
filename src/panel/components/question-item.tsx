@@ -3,7 +3,6 @@ import type { TMaterials, TQuestionItem, TSolutionItem } from "../../types";
 import { radioMap } from "../../view/utils/constant";
 import { setImg } from "../../view/utils/setImg";
 import { useSetting } from "../../view/components/hooks";
-import { Button } from "@/components/ui/button";
 import { OptionGroup } from "@/components/ui/option-group";
 
 interface TQuestionItemProps {
@@ -16,13 +15,7 @@ interface TQuestionItemProps {
 export const QuestionItem = (props: TQuestionItemProps) => {
   const { data = [], materials = [], onChange, index, isMultipleChoice = false } = props;
 
-  const [excludeMap, setExcludeMap] = React.useState<Record<string, boolean>>(
-    {},
-  );
-
   const [selectedAnswers, setSelectedAnswers] = React.useState<Record<number, string | string[]>>({});
-
-  const { setting } = useSetting();
 
   return (
     <div>
