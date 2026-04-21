@@ -19,20 +19,45 @@ const History = ({ categoryId }: { categoryId?: string }) => {
   const [examType, setExamType] = React.useState<ExamType>("xingce");
   const [currentCategoryId, setCurrentCategoryId] = React.useState<string>(categoryId || "3");
 
-  useSetting();
-  const navigate = useNavigate();
-  const location = useLocation();
+  // 下拉加载状态
+  const [currentcursor, setCurrentcursor] = React.useState<string>("");
+  const [loadingMore, setLoadingMore] = React.useState(false);
+  const [hasMore, setHasMore] = React.useState(true);
+
 
   React.useEffect(() => {
+    // 重置状态
+    setLoading(true);
+    setCurrentcursor("");
+    setHistoryList([]);
+    setHasMore(true);
+    
     vscode.postMessage({
       command: "history",
       postData: {
         categoryId: currentCategoryId,
         category: "xingce",
+        cursor: "",
         count: 15,
       },
     });
   }, [currentCategoryId]);
+  
+  // 加载更多数据
+  const loadMore = () => {
+    if (!loadingMore && hasMore) {
+      setLoadingMore(true);
+      vscode.postMessage({
+        command: "history",
+        postData: {
+          categoryId: currentCategoryId,
+          category: "xingce",
+          cursor: currentcursor,
+          count: 15,
+        },
+      });
+    }
+  };
 
   React.useEffect(() => {
     const handleMessage = (event: any) => {
@@ -44,8 +69,21 @@ const History = ({ categoryId }: { categoryId?: string }) => {
       }
 
       if (message.command === "sendhistory") {
-        console.log("history", JSON.stringify(message));
-        setHistoryList(message.data.historyItems || []);
+        console.log("history", message);
+        const newItems = message.data.historyItems || [];
+        
+        if (currentcursor) {
+          // 加载更多数据，追加到现有列表
+          setHistoryList((prev: any) => [...prev, ...newItems]);
+        } else {
+          // 首次加载数据，替换整个列表
+          setHistoryList(newItems);
+        }
+        
+        setCurrentcursor(message.data.cursor || null);
+        setHasMore(!!message.data.cursor);
+        setLoading(false);
+        setLoadingMore(false);
       }
     };
 
@@ -54,7 +92,27 @@ const History = ({ categoryId }: { categoryId?: string }) => {
     return () => {
       window.removeEventListener("message", handleMessage);
     };
-  }, []);
+  }, [currentcursor]);
+  
+  // 滚动监听，实现下拉加载
+  React.useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
+      const clientHeight = document.documentElement.clientHeight || window.innerHeight;
+      
+      // 当滚动到距离底部 100px 时加载更多
+      if (scrollTop + clientHeight >= scrollHeight - 100) {
+        loadMore();
+      }
+    };
+    
+    window.addEventListener("scroll", handleScroll);
+    
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [loadingMore, hasMore, currentcursor, currentCategoryId]);
 
   const goDetail = ({ exerciseKey }: { exerciseKey?: string }) => {
     // 发送消息到扩展，创建 Panel 并传入参数
@@ -141,6 +199,19 @@ const History = ({ categoryId }: { categoryId?: string }) => {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* 加载更多提示 */}
+        {loadingMore && (
+          <div className="mt-4 flex justify-center items-center py-4">
+            <div className="text-sm text-muted-foreground">加载更多中...</div>
+          </div>
+        )}
+        
+        {!loadingMore && !hasMore && (
+          <div className="mt-4 flex justify-center items-center py-4">
+            <div className="text-sm text-muted-foreground">没有更多数据了</div>
           </div>
         )}
       </div>

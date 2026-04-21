@@ -100,11 +100,13 @@ export default class WebviewHandle {
     category = "xingce",
     count,
     categoryId = 1,
-  }: { category?: string; count?: number; categoryId?: number } = {}) {
+    cursor = ""
+  }: { category?: string; count?: number; categoryId?: number; cursor?: string } = {}) {
     const res = await getUserHistory({
       category,
       count: count || 15,
       categoryId: categoryId || undefined,
+      cursor: cursor || "",
     });
     this.webviewPanel.webview.postMessage({
       command: "sendhistory",

@@ -154,12 +154,14 @@ export const getUserHistory = async ({
   category = "xingce",
   count = 15,
   categoryId,
+  cursor = ""
 }: {
   category?: string;
   count?: number;
   categoryId?: number;
+  cursor?: string;
 }) => {
-  const url = `https://tiku.fenbi.com/combine/exercise/getExerciseBriefHistory?noCacheTag=${Math.round(1e3 * Math.random())}&categoryId=${categoryId}&limit=${count}&cursor=0&routecs=${category}&app=web&kav=125&av=127&hav=125&version=3.0.0.0`
+  const url = `https://tiku.fenbi.com/combine/exercise/getExerciseBriefHistory?noCacheTag=${Math.round(1e3 * Math.random())}&categoryId=${categoryId}&limit=${count}&cursor=${cursor}&routecs=${category}&app=web&kav=125&av=127&hav=125&version=3.0.0.0`
   const res = await ajax("GET", url);
   return res;
 };

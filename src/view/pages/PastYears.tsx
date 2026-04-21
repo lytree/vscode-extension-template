@@ -42,6 +42,11 @@ const PastYears = ({ labelId }: { labelId?: string }) => {
   const [examType, setExamType] = React.useState<ExamType>("xingce");
   const [currentLabelId, setCurrentLabelId] = React.useState<string>(labelId || "1");
 
+  // 分页状态
+  const [currentPage, setCurrentPage] = React.useState(0);
+  const [pageSize, setPageSize] = React.useState(15);
+  const [totalItems, setTotalItems] = React.useState(0);
+
 
   React.useEffect(() => {
     setLoading(true);
@@ -49,9 +54,11 @@ const PastYears = ({ labelId }: { labelId?: string }) => {
       command: "papers",
       postData: {
         labelId: currentLabelId,
+        page: currentPage.toString(),
+        pageSize: pageSize.toString(),
       },
     });
-  }, [currentLabelId]);
+  }, [currentLabelId, currentPage, pageSize]);
   React.useEffect(() => {
     vscode.postMessage({
       command: "subLabels",
@@ -65,12 +72,14 @@ const PastYears = ({ labelId }: { labelId?: string }) => {
       const message = event.data;
       if (message.command === "pastYears") {
         // 使用从扩展获取的历年题库数据
-
+        console.log("pastYears", message);
         setPastYears(message.data.list || []);
+        setTotalItems(message.data.pageInfo?.totalItem || 0);
+        setCurrentPage(message.data.pageInfo?.currentPage || 0);
         setLoading(false);
       }
       if (message.command === "labels") {
-        console.log("pastYears", message);
+
         setCacheData(message.data || {});
       }
     };
@@ -160,8 +169,8 @@ const PastYears = ({ labelId }: { labelId?: string }) => {
                   {region.name}
                 </button>
               )) || (
-                <div className="text-sm text-muted-foreground">加载地区数据中...</div>
-              )}
+                  <div className="text-sm text-muted-foreground">加载地区数据中...</div>
+                )}
             </div>
           </div>
 
@@ -204,6 +213,27 @@ const PastYears = ({ labelId }: { labelId?: string }) => {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* 分页组件 */}
+          <div className="p-3 border-t border-border flex justify-center items-center gap-2">
+            <button
+              className={`px-3 py-1 rounded-md text-sm transition-colors ${currentPage === 1 ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-primary text-primary-foreground hover:bg-primary/80"}`}
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              上一页
+            </button>
+            <span className="text-sm text-muted-foreground">
+              第 {currentPage + 1} 页，共 {Math.ceil(totalItems / pageSize)} 页
+            </span>
+            <button
+              className={`px-3 py-1 rounded-md text-sm transition-colors ${currentPage >= Math.ceil(totalItems / pageSize) ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-primary text-primary-foreground hover:bg-primary/80"}`}
+              onClick={() => setCurrentPage(prev => prev + 1)}
+              disabled={currentPage >= Math.ceil(totalItems / pageSize)}
+            >
+              下一页
+            </button>
           </div>
         </div>
       )}
