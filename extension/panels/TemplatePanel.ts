@@ -1,12 +1,22 @@
 import * as vscode from 'vscode';
 import { renderWebviewHtml } from '../webview/renderWebviewHtml.js';
 import {
+  changeQuestionCount,
+  courseSetChange,
+  getCache,
+  getCategories,
+  getCurrent,
   getExercisesId,
   getExercisesUrl,
-  getQuestion as getQuestionService,
+  getHistory,
+  getQuestion,
+  getQuickExercisesId,
   getSolution,
-  getSolution as getSolutionService
-} from '../utils/service.js';
+  getSolutionQuestion,
+  incr,
+  studyTime,
+  submit,
+} from "../utils/service.js";
 
 export class TemplatePanel {
   private static panels: Map<string, TemplatePanel> = new Map();
@@ -96,7 +106,7 @@ export class TemplatePanel {
       }
 
       const staticUrl = exerciseResult?.data?.staticUrl?.urls?.[0];
-      const questionResult = await getQuestionService(category, staticUrl);
+      const questionResult = await getQuestion(category, staticUrl);
 
       const solutionResult = await getSolution(category, postCombinKey);
 
@@ -184,7 +194,11 @@ export class TemplatePanel {
         if (command === "getQuickQuestion") this.getQuickQuestion(postData);
         if (command === "submit") this.submit(postData);
         if (command === "jumpFenbi") this.jumpFenbi(postData);
-        if (command === "answer") this.answer(postData);
+        if (command === "answer") {
+          this.fenbiChannel.appendLine(`Answer received from panel ${this.panelId}: ${JSON.stringify(postData)}`);
+          this.studyTime(postData);
+          if (message.inc) this.inc(postData);
+        }
         if (command === "closePanel") this.closePanel();
         if (command === "navigate") this.navigate(postData);
       }
@@ -229,7 +243,7 @@ export class TemplatePanel {
       }
 
       const staticUrl = exerciseResult?.data?.staticUrl?.urls?.[0];
-      const questionResult = await getQuestionService(category, staticUrl);
+      const questionResult = await getQuestion(category, staticUrl);
 
       // 获取答案信息
       const solutionResult = await getSolution(category, postCombinKey);
@@ -268,7 +282,7 @@ export class TemplatePanel {
       }
 
       const staticUrl = exerciseResult?.data?.staticUrl?.urls?.[0];
-      const questionResult = await getQuestionService(category, staticUrl);
+      const questionResult = await getQuestion(category, staticUrl);
 
       questionResult["exerciseId"] = exerciseResult?.data?.ancientExerciseId?.id;
       questionResult["combinKey"] = combineKey;
@@ -290,7 +304,7 @@ export class TemplatePanel {
   private async submit({ startTime, combineKey, category }: { startTime: number; combineKey: string; category: string }) {
     try {
       // 获取答案信息
-      const solutionResult = await getSolutionService(category, combineKey);
+      const solutionResult = await getSolution(category, combineKey);
 
       this.panel.webview.postMessage({
         command: "solution",
@@ -335,10 +349,10 @@ export class TemplatePanel {
       }
 
       const staticUrl = exerciseResult?.data?.staticUrl?.urls?.[0];
-      const questionResult = await getQuestionService(category, staticUrl);
+      const questionResult = await getQuestion(category, staticUrl);
       this.fenbiChannel.appendLine("getSolution :staticUrl:" + JSON.stringify(questionResult));
       // 获取答案信息
-      const solutionResult = await getSolutionService(category, postCombinKey);
+      const solutionResult = await getSolution(category, postCombinKey);
 
       questionResult["exerciseId"] = exerciseResult?.data?.ancientExerciseId?.id;
       questionResult["combinKey"] = postCombinKey;
@@ -371,15 +385,6 @@ export class TemplatePanel {
     }
   }
 
-  // 处理 answer 请求
-  private answer(postData: any) {
-    try {
-      // 这里可以添加答题记录逻辑
-      this.fenbiChannel.appendLine(`Answer submitted: ${JSON.stringify(postData)}`);
-    } catch (error) {
-      this.fenbiChannel.appendLine(`Error submitting answer: ${error}`);
-    }
-  }
 
   // 处理 closePanel 请求
   private closePanel() {
@@ -406,5 +411,34 @@ export class TemplatePanel {
   // 向 Panel 发送消息
   public postMessage(message: any) {
     this.panel.webview.postMessage(message);
+  }
+
+  studyTime(params: { exerciseId: number; id: number }) {
+    studyTime({
+      exerciseId: params.exerciseId,
+      questionId: 0,
+      startTime: Date.now(),
+      studyTime: 30000,
+      subType: 1,
+      tikuPrefix: "xingce",
+    });
+  }
+
+  async inc(params: any) {
+    let answer = {
+      type: 201,
+      choice: String(params.answer),
+    } as any;
+    if (params.category == "shenlun") {
+      answer = {
+        type: 204,
+        answer: params.answer,
+      };
+    }
+    await incr(params.category, params.combineKey, {
+      answer: answer,
+      key: params.globalId,
+      time: Math.floor((Date.now() - params.startTime) / 1000),
+    });
   }
 }

@@ -42,6 +42,7 @@ export default class WebviewHandle {
       if (command === "jumpFenbi") this.jump(postData);
       if (command === "changeQuestionCount") this.changeQuestionCount(postData);
       if (command === "answer") {
+        this.fenbiChannel.appendLine(`Answer submitted: ${JSON.stringify(postData)}`);
         this.studyTime(postData);
         if (message.inc) this.inc(postData);
       }

@@ -190,13 +190,7 @@ function Answer() {
                       size="sm"
                       className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
                     >
-                      标
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                    >
-                      记
+                      标记
                     </Button>
                     <Button
                       size="sm"

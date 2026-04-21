@@ -118,6 +118,7 @@ function Detail() {
   };
 
   const onRaioChange = (e: any, item: TQuestionItem, index: number) => {
+    console.log("选项变化：", e.target.value, "题目：", item, "索引：", index);
     vscode.postMessage({
       command: "answer",
       inc: true,

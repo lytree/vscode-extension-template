@@ -1,30 +1,23 @@
 import * as React from "react";
 import { HistoryItem } from "../components/history-item";
-import { useLocation, useNavigate } from "react-router-dom";
 import { useSetting } from "../components/hooks";
 import { getVscodeApi } from "../utils/vscodeApi";
 import { Button } from "../../components/ui/button";
 
 const vscode = getVscodeApi();
 
-export const History = () => {
+const History = () => {
   const [historyList, setHistoryList] = React.useState<any>([]);
 
   const [loading, setLoading] = React.useState(true);
 
   const { setting, setSetting } = useSetting();
 
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { count, categoryId } = location.state || {};
-
   React.useEffect(() => {
     vscode.postMessage({
       command: "history",
       postData: {
         category: setting.categoryId,
-        count: count,
-        categoryId: categoryId,
       },
     });
     window.addEventListener("message", (event: any) => {
@@ -48,16 +41,16 @@ export const History = () => {
     id?: number;
     combineKey?: string;
   }) => {
-    navigate("/detail", {
-      state: {
+    // 发送消息到扩展，创建 Panel 并传入参数
+    vscode.postMessage({
+      command: "createPanel",
+      postData: {
         id,
         combineKey,
-      },
+        type: 1,
+        router: "/detail",
+      }
     });
-  };
-
-  const onBack = () => {
-    navigate(-1);
   };
 
   return (
@@ -68,9 +61,6 @@ export const History = () => {
         </div>
       ) : (
         <div className="menu-container">
-          <Button variant="ghost" onClick={onBack}>
-            返回上一页
-          </Button>
           {historyList.map((item: any, index: number) => {
             return (
               <HistoryItem
@@ -89,3 +79,5 @@ export const History = () => {
     </div>
   );
 };
+
+export default History;

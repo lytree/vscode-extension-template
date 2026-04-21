@@ -9,7 +9,7 @@ export const HistoryItem = (props: {
 }) => {
   const { data, goExercise } = props;
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   return (
     <div className="border border-white rounded-lg p-4">
@@ -27,13 +27,13 @@ export const HistoryItem = (props: {
             variant="secondary"
             onClick={() => {
               if (data?.status == 1) {
-                navigate("/answer", {
-                  state: {
-                    id: data?.id,
-                    combineKey: data?.key,
-                    type: data?.sheet?.type,
-                  },
-                });
+                // navigate("/answer", {
+                //   state: {
+                //     id: data?.id,
+                //     combineKey: data?.key,
+                //     type: data?.sheet?.type,
+                //   },
+                // });
 
                 return;
               }

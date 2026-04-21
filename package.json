@@ -16,65 +16,71 @@
   "activationEvents": [
     "onCommand:vscode-extension-template.helloWorld",
     "onCommand:vscode-extension-template.openPanel",
-    "onView:template.webviewView",
-    "onView:openViewWebview"
+    "onView:template.webviewView"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "vscode-extension-template.helloWorld",
-        "title": "Template: Hello World"
-      },
-      {
-        "command": "vscode-extension-template.openPanel",
-        "title": "Template: Open Webview Panel"
-      },
-      {
-        "command": "openViewWebview.refreshEntry",
+        "command": "fenbi.refreshEntry",
         "title": "刷新",
-        "icon": {
-          "light": "resources/light/refresh.svg",
-          "dark": "resources/dark/refresh.svg"
-        }
+        "icon": "$(extensions-refresh)"
+      },
+      {
+        "command": "fenbi.navigateToTiku",
+        "title": "题库",
+        "icon": "$(library)"
+      },
+      {
+        "command": "fenbi.navigateToHistory",
+        "title": "练习历史",
+        "icon": "$(history)"
+      },
+      {
+        "command": "fenbi.navigateToPastYears",
+        "title": "历年题库",
+        "icon": "$(file-text)"
       }
     ],
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "template-sidebar",
-          "title": "Template",
-          "icon": "resources/template.svg"
-        },
-        {
           "id": "viewBar",
-          "title": "view",
-          "icon": "resources/fenbi.svg"
+          "title": "粉笔",
+          "icon": "resources/template.svg"
         }
       ]
     },
     "views": {
-      "template-sidebar": [
-        {
-          "id": "template.webviewView",
-          "type": "webview",
-          "name": "Template View"
-        }
-      ],
       "viewBar": [
         {
           "type": "webview",
-          "id": "openViewWebview",
-          "name": "container"
+          "id": "fenbi.webviewView",
+          "name": ""
         }
       ]
     },
     "menus": {
       "view/title": [
         {
-          "command": "openViewWebview.refreshEntry",
-          "group": "navigation",
-          "when": "view == openViewWebview"
+          "command": "fenbi.refreshEntry",
+          "when": "view == fenbi.webviewView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "fenbi.navigateToTiku",
+          "when": "view == fenbi.webviewView",
+          "group": "navigation@2"
+        },
+        {
+          "command": "fenbi.navigateToHistory",
+          "when": "view == fenbi.webviewView",
+          "group": "navigation@3"
+        },
+        {
+          "command": "fenbi.navigateToPastYears",
+          "when": "view == fenbi.webviewView",
+          "group": "navigation@4"
         }
       ]
     },

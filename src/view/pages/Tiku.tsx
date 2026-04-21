@@ -1,6 +1,5 @@
 import * as React from "react";
 import type { TCacheData, TSetting } from "../../types";
-import { useNavigate } from "react-router-dom";
 import { getVscodeApi } from "../utils/vscodeApi";
 import { Button } from "../../components/ui/button";
 
@@ -90,12 +89,10 @@ const CollapsibleNavItem: React.FC<{
   );
 };
 
-export const Home = () => {
+const Tiku = () => {
   const [loading, setLoading] = React.useState(true);
   const [categories, setCategories] = React.useState<CategoryItem[]>([]);
   const [cacheData, setCacheData] = React.useState<TCacheData>();
-
-  const navigate = useNavigate();
 
   React.useEffect(() => {
     // 监听来自扩展的消息
@@ -120,8 +117,6 @@ export const Home = () => {
     };
   }, []);
 
-
-
   const handleCategoryClick = (item: CategoryItem) => {
     // 发送消息到扩展，创建 Panel 并传入参数
     vscode.postMessage({
@@ -133,9 +128,17 @@ export const Home = () => {
         router: "/detail",
       }
     });
+  };
 
-    // // 这里可以根据需要跳转到详情页或执行其他操作
-    // goDetail({ id: item.id, type: 1 });
+  const handleCustomPractice = () => {
+    // 发送消息到扩展，创建 Panel 并传入参数
+    vscode.postMessage({
+      command: "createPanel",
+      postData: {
+        type: 2,
+        router: "/detail",
+      }
+    });
   };
 
   return (
@@ -160,12 +163,7 @@ export const Home = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => {
-                // 自定义刷题功能
-                goDetail({
-                  type: 2,
-                });
-              }}
+              onClick={handleCustomPractice}
             >
               自定义刷题
             </Button>
@@ -190,3 +188,5 @@ export const Home = () => {
     </div>
   );
 };
+
+export default Tiku;
