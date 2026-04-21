@@ -2,8 +2,12 @@ import * as React from "react";
 import type { TCacheData, TSetting } from "../../types";
 import { getVscodeApi } from "../utils/vscodeApi";
 import { Button } from "../../components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 
 const vscode = getVscodeApi();
+
+// 考试类型
+type ExamType = "shenlun" | "xingce";
 
 // 分类数据结构类型
 interface CategoryItem {
@@ -93,6 +97,7 @@ const Tiku = () => {
   const [loading, setLoading] = React.useState(true);
   const [categories, setCategories] = React.useState<CategoryItem[]>([]);
   const [cacheData, setCacheData] = React.useState<TCacheData>();
+  const [examType, setExamType] = React.useState<ExamType>("xingce");
 
   React.useEffect(() => {
     // 监听来自扩展的消息
@@ -125,6 +130,7 @@ const Tiku = () => {
         id: item.id,
         name: item.name,
         type: 1,
+        categoryId: examType,
         router: "/detail",
       }
     });
@@ -136,6 +142,7 @@ const Tiku = () => {
       command: "createPanel",
       postData: {
         type: 2,
+        categoryId: examType,
         router: "/detail",
       }
     });
@@ -160,13 +167,17 @@ const Tiku = () => {
                 </svg>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCustomPractice}
-            >
-              自定义刷题
-            </Button>
+            <div className="flex items-center gap-2">
+              <Select value={examType} onValueChange={(value: ExamType) => setExamType(value)}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="shenlun">申论</SelectItem>
+                  <SelectItem value="xingce">行测</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* 分类列表 */}

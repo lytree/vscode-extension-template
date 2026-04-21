@@ -58,9 +58,49 @@ const AppContent = () => {
             <History />
           </React.Suspense>
         } />
+        <Route path="/history/exercise" element={
+          <React.Suspense fallback={<Loading />}>
+            <History categoryId="3" />
+          </React.Suspense>
+        } />
+        <Route path="/history/paper" element={
+          <React.Suspense fallback={<Loading />}>
+            <History categoryId="1" />
+          </React.Suspense>
+        } />
         <Route path="/pastYears" element={
           <React.Suspense fallback={<Loading />}>
             <PastYears />
+          </React.Suspense>
+        } />
+        <Route path="/pastYears/label1" element={
+          <React.Suspense fallback={<Loading />}>
+            <PastYears labelId="1" />
+          </React.Suspense>
+        } />
+        <Route path="/pastYears/label2" element={
+          <React.Suspense fallback={<Loading />}>
+            <PastYears labelId="2" />
+          </React.Suspense>
+        } />
+        <Route path="/pastYears/label3" element={
+          <React.Suspense fallback={<Loading />}>
+            <PastYears labelId="3" />
+          </React.Suspense>
+        } />
+        <Route path="/pastYears/label4" element={
+          <React.Suspense fallback={<Loading />}>
+            <PastYears labelId="4" />
+          </React.Suspense>
+        } />
+        <Route path="/pastYears/label5" element={
+          <React.Suspense fallback={<Loading />}>
+            <PastYears labelId="5" />
+          </React.Suspense>
+        } />
+        <Route path="/pastYears/label6" element={
+          <React.Suspense fallback={<Loading />}>
+            <PastYears labelId="6" />
           </React.Suspense>
         } />
       </Routes>

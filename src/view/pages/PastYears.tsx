@@ -1,51 +1,81 @@
 import * as React from "react";
-import type { TCacheData, TSetting } from "../../types";
+import type { TLabelsData, TSetting } from "../../types";
 import { getVscodeApi } from "../utils/vscodeApi";
-import { Button } from "../../components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 
 const vscode = getVscodeApi();
 
+// 考试类型
+type ExamType = "shenlun" | "xingce";
+
 // 历年题库数据结构类型
 interface PastYearItem {
+  combineKey: string;
   id: number;
-  year: number;
   name: string;
-  subject: string;
-  difficulty: number;
+  date: string;
+  status: number;
+  createdTime: number;
+  type: number;
+  newPaper: boolean;
+  topic: any;
+  paperMeta: {
+    id: number;
+    exerciseCount: number;
+    averageScore: number;
+    difficulty: number;
+    highestScore: number;
+  };
+  exercise: any;
+  hasVideo: number;
+  encodeCheckInfo: string;
   [key: string]: any;
 }
 
-// 地区数据
-const regions = [
-  "推荐", "国考", "国考模拟题", "省考模拟题", "安徽", "北京", "福建", "甘肃", "广东", "广西",
-  "贵州", "海南", "河北", "河南", "黑龙江", "湖北", "湖南", "吉林", "江苏", "江西",
-  "辽宁", "内蒙古", "宁夏", "青海", "山东", "山西", "陕西", "上海", "四川", "天津",
-  "西藏", "新疆", "云南", "浙江", "重庆", "深圳市考", "广州市考", "政法干警", "选调"
-];
 
-const PastYears = () => {
+
+const PastYears = ({ labelId }: { labelId?: string }) => {
   const [loading, setLoading] = React.useState(true);
   const [pastYears, setPastYears] = React.useState<PastYearItem[]>([]);
-  const [cacheData, setCacheData] = React.useState<TCacheData>();
-  const [selectedRegion, setSelectedRegion] = React.useState("推荐");
+  const [cacheData, setCacheData] = React.useState<TLabelsData>();
+  const [selectedRegion, setSelectedRegion] = React.useState(1);
+  const [examType, setExamType] = React.useState<ExamType>("xingce");
+  const [currentLabelId, setCurrentLabelId] = React.useState<string>(labelId || "1");
 
+
+  React.useEffect(() => {
+    setLoading(true);
+    vscode.postMessage({
+      command: "papers",
+      postData: {
+        labelId: currentLabelId,
+      },
+    });
+  }, [currentLabelId]);
+  React.useEffect(() => {
+    vscode.postMessage({
+      command: "subLabels",
+      postData: {
+      },
+    });
+  }, []);
   React.useEffect(() => {
     // 监听来自扩展的消息
     const handleMessage = (event: any) => {
       const message = event.data;
-
       if (message.command === "pastYears") {
         // 使用从扩展获取的历年题库数据
-        setPastYears(message.data || []);
-        setCacheData(message.data.cacheResult);
+
+        setPastYears(message.data.list || []);
         setLoading(false);
+      }
+      if (message.command === "labels") {
+        console.log("pastYears", message);
+        setCacheData(message.data || {});
       }
     };
 
     window.addEventListener("message", handleMessage);
-
-    // 初始化时请求数据
-    vscode.postMessage({ command: "pastYears" });
 
     return () => {
       window.removeEventListener("message", handleMessage);
@@ -53,37 +83,37 @@ const PastYears = () => {
   }, []);
 
   const handleYearClick = (item: PastYearItem) => {
+    // 从名称中提取年份
+    const yearMatch = item.name.match(/(\d{4})年/);
+    const year = yearMatch ? parseInt(yearMatch[1]) : 0;
+
+    // 从名称中提取科目
+    const subjectMatch = item.name.match(/《(.*?)》/);
+    const subject = subjectMatch ? subjectMatch[1] : "";
+
     // 发送消息到扩展，创建 Panel 并传入参数
     vscode.postMessage({
       command: "createPanel",
       postData: {
         id: item.id,
-        year: item.year,
+        combineKey: item.combineKey,
+        year: year,
         name: item.name,
-        subject: item.subject,
+        subject: subject,
         type: 3,
+        examType: examType,
         router: "/pastYearDetail",
       }
     });
   };
 
-  const handleRegionChange = (region: string) => {
+  const handleRegionChange = (region: number) => {
     setSelectedRegion(region);
+    setCurrentLabelId(region.toString());
     // 这里可以根据选中的地区过滤数据
     // 暂时使用模拟数据
   };
 
-  // 模拟数据
-  const mockData: PastYearItem[] = [
-    { id: 1, year: 2026, name: "河南省公务员录用考试", subject: "行测", difficulty: 4.4 },
-    { id: 2, year: 2025, name: "河南省公务员录用考试", subject: "行测", difficulty: 4.4 },
-    { id: 3, year: 2024, name: "河南省公务员录用考试", subject: "行测", difficulty: 4.5 },
-    { id: 4, year: 2023, name: "河南省公务员录用考试", subject: "行测", difficulty: 4.5 },
-    { id: 5, year: 2022, name: "河南省公务员录用考试", subject: "行测", difficulty: 4.4 },
-    { id: 6, year: 2021, name: "河南省公务员录用考试", subject: "行测", difficulty: 4.6 },
-    { id: 7, year: 2020, name: "河南省公务员考试", subject: "行测", difficulty: 4.5 },
-    { id: 8, year: 2019, name: "河南省公务员考试", subject: "行测", difficulty: 4.5 },
-  ];
 
   return (
     <div className="h-full rounded-lg shadow-sm">
@@ -106,35 +136,49 @@ const PastYears = () => {
                 </svg>
               </div>
             </div>
+            <Select value={examType} onValueChange={(value: ExamType) => setExamType(value)}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="shenlun">申论</SelectItem>
+                <SelectItem value="xingce">行测</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+
 
           {/* 地区选择栏 */}
           <div className="px-3 py-2 border-b border-border overflow-x-auto">
             <div className="flex gap-2 min-w-max">
-              {regions.map((region) => (
-                <Button
-                  key={region}
-                  variant={selectedRegion === region ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => handleRegionChange(region)}
+              {cacheData?.map((region) => (
+                <button
+                  key={region.id}
+                  className={`px-3 py-1 rounded-md text-sm transition-colors ${selectedRegion === region.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
+                  onClick={() => handleRegionChange(region.id)}
                 >
-                  {region}
-                </Button>
-              ))}
+                  {region.name}
+                </button>
+              )) || (
+                <div className="text-sm text-muted-foreground">加载地区数据中...</div>
+              )}
             </div>
           </div>
 
           {/* 题目数量统计 */}
           <div className="px-3 py-2 text-sm text-muted-foreground border-b border-border">
-            共{mockData.length}套
+            {(() => {
+              const currentRegion = cacheData?.find(r => r.id === selectedRegion);
+              return currentRegion ? `共${currentRegion.labelMeta.paperCount}套` : `共${pastYears.length}套`;
+            })()}
           </div>
 
           {/* 历年题库列表 */}
           <div className="flex-1 overflow-y-auto p-2">
             <div className="space-y-2">
-              {mockData.map((item) => (
-                <div 
-                  key={item.id} 
+              {pastYears.map((item) => (
+                <div
+                  key={item.id}
                   className="border border-border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer"
                   onClick={() => handleYearClick(item)}
                 >
@@ -146,10 +190,14 @@ const PastYears = () => {
                     </div>
                     <div className="flex-1">
                       <div className="text-foreground font-medium">
-                        {item.year}年{item.name}《{item.subject}》题（网友回忆版）
+                        {item.name}
                       </div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        难度{item.difficulty}
+                      <div className="text-xs text-muted-foreground mt-1 flex flex-wrap gap-2">
+                        <span>日期: {item.date}</span>
+                        <span>难度: {item.paperMeta.difficulty}</span>
+                        <span>平均分: {item.paperMeta.averageScore.toFixed(2)}</span>
+                        <span>练习人数: {item.paperMeta.exerciseCount}</span>
+                        {item.hasVideo === 1 && <span className="text-blue-500">有视频解析</span>}
                       </div>
                     </div>
                   </div>

@@ -48,3 +48,20 @@ export type TSetting = {
   backgroundColor: string;
   fontSize?: number;
 };
+
+export type TLabelMeta = {
+  id: number;
+  paperCount: number;
+  difficulty: number;
+  paperIds: number[];
+};
+
+export type TLabel = {
+  id: number;
+  name: string;
+  labelMeta: TLabelMeta;
+  examType: number;
+  childrenLabels: any;
+};
+
+export type TLabelsData = TLabel[];

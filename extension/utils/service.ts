@@ -11,9 +11,8 @@ export const getExercisesId = async (
   const { questionCount, yearScope, correctRatioLow, correctRatioHigh } =
     userInfo.data;
 
-  const url = `https://tiku.fenbi.com/api/${
-    category || "xingce"
-  }/exercises?app=web&kav=100&av=121&hav=100&version=3.0.0.0`;
+  const url = `https://tiku.fenbi.com/api/${category || "xingce"
+    }/exercises?app=web&kav=100&av=121&hav=100&version=3.0.0.0`;
 
   let limit = questionCount || 15;
   if (category == "shenlun") {
@@ -41,9 +40,8 @@ export const getExercisesId = async (
 };
 
 export const getQuickExercisesId = async (category: string = "xingce") => {
-  const url = `https://tiku.fenbi.com/api/${
-    category || "xingce"
-  }/exercises?app=web&kav=100&av=121&hav=100&version=3.0.0.0`;
+  const url = `https://tiku.fenbi.com/api/${category || "xingce"
+    }/exercises?app=web&kav=100&av=121&hav=100&version=3.0.0.0`;
 
   const res = await ajax(
     "FORM",
@@ -147,7 +145,24 @@ export const getHistory = async ({
   const res = await ajax("GET", url);
   return res;
 };
-
+/**
+ *  categoryId 3 练习 1 试卷
+ * @param param0 
+ * @returns 
+ */
+export const getUserHistory = async ({
+  category = "xingce",
+  count = 15,
+  categoryId,
+}: {
+  category?: string;
+  count?: number;
+  categoryId?: number;
+}) => {
+  const url = `https://tiku.fenbi.com/combine/exercise/getExerciseBriefHistory?noCacheTag=${Math.round(1e3 * Math.random())}&categoryId=${categoryId}&limit=${count}&cursor=0&routecs=${category}&app=web&kav=125&av=127&hav=125&version=3.0.0.0`
+  const res = await ajax("GET", url);
+  return res;
+};
 export const incr = async (
   category: string = "xingce",
   combineKey: string,
@@ -206,5 +221,18 @@ export const courseSetChange = async (params: { category: string }) => {
   const url = `https://tiku.fenbi.com/activity/userquiz/courseSetChange?courseSetPrefix=${params.category}&app=web&kav=100&av=121&hav=100&version=3.0.0.0`;
   const res = await ajax("PUT", url, {});
   console.log("🚀 ~ courseSetChange ~ res:", res);
+  return res;
+};
+
+
+export const getPapers = async (params: { category: string, page: string, pageSize: string, labelId?: string }) => {
+  const url = `https://tiku.fenbi.com/api/${params.category}/papers/?toPage=${params.page}&pageSize=${params.pageSize}${params.labelId ? `&labelId=${params.labelId}` : ''}&app=web&kav=125&av=127&hav=125&version=3.0.0.0`;
+  const res = await ajax("GET", url, {});
+  return res;
+};
+
+export const getSubLabels = async (postData: any) => {
+  const url = `https://tiku.fenbi.com/api/xingce/subLabels?app=web&kav=125&av=127&hav=125&version=3.0.0.0`;
+  const res = await ajax("GET", url, {});
   return res;
 };

@@ -8,10 +8,13 @@ import {
   getExercisesId,
   getExercisesUrl,
   getHistory,
+  getPapers,
   getQuestion,
   getQuickExercisesId,
   getSolution,
   getSolutionQuestion,
+  getSubLabels,
+  getUserHistory,
   incr,
   studyTime,
   submit,
@@ -32,7 +35,7 @@ export default class WebviewHandle {
   onDidReceiveMessage() {
     this.webviewPanel.webview.onDidReceiveMessage((message: { [key: string]: any }) => {
       const { postData = {}, command = "" } = message || {};
-      this.fenbiChannel.appendLine( `WebviewHandle Received message: ${command} with data: ${JSON.stringify(postData)}`);
+      this.fenbiChannel.appendLine(`WebviewHandle Received message: ${command} with data: ${JSON.stringify(postData)}`);
       if (command === "pageInit") this.pageInit(postData);
       if (command === "changeCategory") this.changeCategory(postData);
       if (command === "getQuestion") this.getQuestion(postData);
@@ -49,6 +52,12 @@ export default class WebviewHandle {
       if (command === "history") {
         this.getHistory(postData);
       }
+      if (command === "papers") {
+        this.getPapers(postData);
+      }
+      if (command === "subLabels") {
+        this.getSubLabels(postData);
+      }
       if (command === "openInBrowser") {
         console.log("openInBrowser", postData);
         vscode.env.openExternal(vscode.Uri.parse(postData.url));
@@ -62,20 +71,44 @@ export default class WebviewHandle {
       }
     });
   }
+  async getSubLabels(postData: any) {
+    const res = await getSubLabels(postData);
+    this.webviewPanel.webview.postMessage({
+      command: "labels",
+      data: res,
+    });
+  }
+  async getPapers({
+    category = "xingce",
+    page = "1",
+    pageSize = "15",
+    labelId,
+  }: { category?: string; page?: string; pageSize?: string; labelId?: string } = {}) {
+    const res = await getPapers({
+      category,
+      page: page || "1",
+      pageSize: pageSize || "15",
+      labelId: labelId || undefined,
+    });
+    this.webviewPanel.webview.postMessage({
+      command: "pastYears",
+      data: res,
+    });
+  }
 
   async getHistory({
     category = "xingce",
     count,
-    categoryId,
+    categoryId = 1,
   }: { category?: string; count?: number; categoryId?: number } = {}) {
-    const res = await getHistory({
+    const res = await getUserHistory({
       category,
       count: count || 15,
       categoryId: categoryId || undefined,
     });
     this.webviewPanel.webview.postMessage({
-      command: "history",
-      data: res.datas,
+      command: "sendhistory",
+      data: res.data,
     });
   }
 
@@ -211,7 +244,6 @@ export default class WebviewHandle {
     combineKey?: string;
   }) {
     let postCombinKey = combineKey || "";
-    console.log("getQuickQuestion", postCombinKey);
 
     if (!postCombinKey) {
       const res = await getQuickExercisesId(category);
