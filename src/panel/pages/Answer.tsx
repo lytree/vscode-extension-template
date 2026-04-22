@@ -6,7 +6,7 @@ import { getVscodeApi } from "../../view/utils/vscodeApi";
 import { Button } from "../../components/ui/button";
 import { Card, CardHeader, CardTitle, CardAction, CardContent } from "../../components/ui/card";
 import { groupByMaterialIndexesTo2DArray } from "../../view/utils/analyze";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 
 
@@ -17,6 +17,7 @@ const vscode = getVscodeApi();
  */
 function Answer() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isFirst, setFirst] = React.useState(false);
   const [startTime, setStartTime] = React.useState(0);
   const [lastAnswerRecord, setLastAnswerRecord] = React.useState<TLastAnswerRecord>({
@@ -30,6 +31,14 @@ function Answer() {
   const [solutionData, setSolutionData] = React.useState<TSolutionData | null>(null);
   const [combineKey, setCombineKey] = React.useState<string>("");
 
+  // 处理从 navigate 传递过来的数据
+  React.useEffect(() => {
+    if (location.state?.solutionData) {
+      setSolutionData(location.state.solutionData);
+      setLoading(false);
+    }
+  }, [location.state]);
+
   // 统一处理所有消息
   React.useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -37,20 +46,10 @@ function Answer() {
 
       setLoading(false);
 
-      if (message.command === "answerInit") {
-        const { id, name, type } = message.postData;
-        // 处理从 Index 页面传递过来的参数
-
-        // 调用 getSolution 函数获取问题信息
-        getSolution({ category: "xingce", id, type });
-      }
-
-      if (message.command === "getQuestion") {
-        setQuestionData(message.data);
-        setCombineKey(message.data.combineKey);
-      }
 
       if (message.command === "solution") {
+        const { id, name, type } = message.postData;
+        getSolution({ category: "xingce", id, type });
         setSolutionData(message.data);
       }
 
@@ -60,12 +59,12 @@ function Answer() {
         alert(message.data.message);
       }
 
-      if (message.command === "navigate") {
-        // 处理路由跳转
-        const { path, state } = message.data;
+      // if (message.command === "navigate") {
+      //   // 处理路由跳转
+      //   const { path, state } = message.data;
 
-        navigate(path, { state });
-      }
+      //   navigate(path, { state });
+      // }
     };
 
     window.addEventListener("message", handleMessage);
@@ -131,17 +130,13 @@ function Answer() {
     vscode.postMessage({ command: "download" });
   };
 
-  const onSubmit = () => {
-    // 交卷功能
-    vscode.postMessage({ command: "submit" });
-  };
 
   const solutions = groupByMaterialIndexesTo2DArray(
     solutionData?.solutions || []
   );
 
   return (
-    <div className="h-full bg-card flex flex-col" style={{ color: setting?.color, fontSize: setting?.fontSize }}>
+    <div className="h-full bg-card flex flex-col">
       {/* 顶部标题栏 */}
       <div className="top-bar flex justify-between items-center p-4 border-b border-border">
         <h1 className="text-lg font-medium"></h1>
@@ -157,13 +152,6 @@ function Answer() {
             className="text-secondary-foreground hover:bg-secondary/80"
           >
             下载
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={onSubmit}
-            className="text-primary-foreground hover:bg-primary/80"
-          >
-            交卷
           </Button>
         </div>
       </div>

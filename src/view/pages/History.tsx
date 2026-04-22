@@ -122,7 +122,18 @@ const History = ({ categoryId }: { categoryId?: string }) => {
       }
     });
   };
-
+  const goAnswer = ({ exerciseKey }: { exerciseKey?: string }) => {
+    // 发送消息到扩展，创建 Panel 并传入参数
+    vscode.postMessage({
+      command: "history:Answer",
+      postData: {
+        combineKey: exerciseKey,
+        type: 1,
+        category: examType,
+        router: "/answer",
+      }
+    });
+  };
   return (
     <div>
       <div className="p-3 flex justify-between items-center">
@@ -186,9 +197,10 @@ const History = ({ categoryId }: { categoryId?: string }) => {
                         variant={item.status === 1 ? "secondary" : "default"}
                         onClick={() => {
                           if (item.status === 1) {
-                            return;
+                            goAnswer({ exerciseKey: item.exerciseKey });
+                          } else {
+                            goDetail({ exerciseKey: item.exerciseKey });
                           }
-                          goDetail({ exerciseKey: item.exerciseKey });
                         }}
                       >
                         {item.status === 1 ? "已完成" : "继续做题"}

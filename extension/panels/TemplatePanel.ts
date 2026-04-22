@@ -93,7 +93,7 @@ export class TemplatePanel {
   public static async createHistoryAnswerPanel(extensionUri: vscode.Uri, fenbiChannel: vscode.OutputChannel, params: any) {
     const panelParams = {
       ...params,
-      router: "/detail",
+      router: "/answer",
       name: params?.name || "练习历史"
     };
     // 如果已存在 Panel，则显示提示

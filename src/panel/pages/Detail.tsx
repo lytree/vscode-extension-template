@@ -42,9 +42,13 @@ function Detail() {
 
 
       if (message.command === "getQuestion") {
-
         setQuestionData(message.data);
         setCombineKey(message.data.combineKey);
+      }
+
+      if (message.command === "solution") {
+        // 交卷成功后，跳转到 Answer 界面查看答题信息
+        navigate("/answer", { state: { solutionData: message.data } });
       }
 
       if (message.command === "message") {
@@ -70,30 +74,6 @@ function Detail() {
     }
   }, [questionData?.questions]);
 
-  const getQuestion = ({
-    category,
-    id,
-    combineKey,
-    type = 1,
-  }: {
-    category?: string;
-    id?: number;
-    combineKey?: string | null;
-    type?: number;
-  }) => {
-    setLoading(true);
-    if (type == 2) {
-      vscode.postMessage({
-        command: "getQuickQuestion",
-        postData: { category, combineKey },
-      });
-      return;
-    }
-    vscode.postMessage({
-      command: "getQuestion",
-      postData: { category, id, combineKey },
-    });
-  };
 
   const onBack = () => {
     // 关闭 Panel
