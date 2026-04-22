@@ -56,13 +56,6 @@ function Detail() {
         console.error("Error message:", message.data.message);
         alert(message.data.message);
       }
-
-      if (message.command === "navigate") {
-        // 处理路由跳转
-        const { path, state } = message.data;
-        console.log("Navigating to:", path, "with state:", state);
-        navigate(path, { state });
-      }
     };
 
     window.addEventListener("message", handleMessage);
@@ -112,7 +105,6 @@ function Detail() {
   };
 
   const onRaioChange = (e: any, item: TQuestionItem, index: number) => {
-    console.log("选项变化：", e.target.value, "题目：", item, "索引：", index);
     vscode.postMessage({
       command: "answer",
       inc: true,

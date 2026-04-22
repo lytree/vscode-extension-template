@@ -19,115 +19,131 @@ import {
 } from "../utils/service.js";
 
 export class TemplatePanel {
-  private static panels: Map<string, TemplatePanel> = new Map();
-  private fenbiChannel: vscode.OutputChannel;
+
+  private static instance: TemplatePanel | null = null;
+
+  private readonly fenbiChannel: vscode.OutputChannel;
   public isWebviewReady: boolean = false;
   public pendingParams: any = null;
   private cachedQuestionData: any = null;
-  public readonly panelId: string;
   public readonly panel: vscode.WebviewPanel;
-  private extensionUri: vscode.Uri;
 
-  public static async createOrShow(extensionUri: vscode.Uri, fenbiChannel: vscode.OutputChannel, params?: any) {
-    const column = vscode.window.activeTextEditor?.viewColumn ?? vscode.ViewColumn.One;
-    const panelId = params?.id?.toString() || Date.now().toString();
-
-    // 如果已存在该 Panel，则显示并更新参数
-    const existingPanel = TemplatePanel.panels.get(panelId);
-    if (existingPanel) {
-      existingPanel.panel.reveal(column);
-      if (params) {
-        if (existingPanel.isWebviewReady) {
-          existingPanel.postMessage({
-            command: "panelInit",
-            postData: params
-          });
-        } else {
-          existingPanel.pendingParams = params;
-        }
-        if (params.name) {
-          existingPanel.panel.title = params.name;
-        }
-      }
-      return panelId;
+  // 创建题库面板
+  public static async createTikuPanel(extensionUri: vscode.Uri, fenbiChannel: vscode.OutputChannel, params?: any) {
+    const panelParams = {
+      ...params,
+      router: "/detail",
+      name: params?.name || "题库"
+    };
+    // 如果已存在 Panel，则显示提示
+    if (TemplatePanel.instance) {
+      vscode.window.showInformationMessage(
+        "已存在一个打开的面板，请先关闭它再创建新的面板。",
+        "确定"
+      );
+      return;
     }
-
-    // 如果是 /detail 路由，先获取数据
     let panelTitle = params?.name || 'Template Panel';
-    let cachedQuestionData: any = null;
-    if (params?.router === "/detail" || !params?.router) {
-      cachedQuestionData = await TemplatePanel.fetchQuestionData(params, fenbiChannel);
-      if (cachedQuestionData) {
-        panelTitle = cachedQuestionData.name || params?.name || 'Panel';
-      }
-    } else if (params?.router === "/answer") {
-      cachedQuestionData = await TemplatePanel.fetchQuestionData(params, fenbiChannel);
-      if (cachedQuestionData) {
-        panelTitle = cachedQuestionData.name || params?.name || 'Panel';
-      }
-    } else {
-      panelTitle = params?.name || 'Panel';
+    let cachedQuestionData = await TemplatePanel.fetchQuestionData(params, fenbiChannel);
+    if (cachedQuestionData) {
+      panelTitle = cachedQuestionData.name || params?.name || 'Panel';
     }
-
-    const panel = vscode.window.createWebviewPanel('templateWebviewPanel', panelTitle, column, {
+    const panel = vscode.window.createWebviewPanel('templateWebviewPanel', panelTitle, vscode.ViewColumn.One, {
       enableScripts: true,
       retainContextWhenHidden: true,
       localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')]
     });
-
-    const templatePanel = new TemplatePanel(panel, extensionUri, fenbiChannel, params, cachedQuestionData, panelId);
-    TemplatePanel.panels.set(panelId, templatePanel);
-    return panelId;
+    TemplatePanel.instance = new TemplatePanel(panel, extensionUri, fenbiChannel, panelParams, cachedQuestionData);
   }
 
-  private static async fetchQuestionData(params: any, fenbiChannel: vscode.OutputChannel): Promise<any> {
-    try {
-      const category = params?.category || "xingce";
-      const id = params?.id;
-
-      if (!id) return null;
-
-      let postCombinKey = "";
-      const idParams: any = { keypointId: id };
-      if (category === "shenlun") {
-        idParams.count = 1;
-      }
-      const idRes = await getExercisesId(category, idParams);
-      postCombinKey = idRes.key;
-
-      const exerciseResult = await getExercisesUrl({
-        category,
-        combineKey: postCombinKey,
-      });
-
-      if (exerciseResult?.code == -1) {
-        fenbiChannel.appendLine(`Fetch question error: ${exerciseResult.message}`);
-        return null;
-      }
-
-      const staticUrl = exerciseResult?.data?.staticUrl?.urls?.[0];
-      const questionResult = await getQuestion(category, staticUrl);
-
-      const solutionResult = await getSolution(category, postCombinKey);
-
-      questionResult["exerciseId"] = exerciseResult?.data?.ancientExerciseId?.id;
-      questionResult["combinKey"] = postCombinKey;
-      questionResult["solutions"] = solutionResult.data?.solutions || [];
-
-      return questionResult;
-    } catch (error) {
-      fenbiChannel.appendLine(`Error fetching question data: ${error}`);
-      return null;
+  // 创建历史面板
+  public static async createHistoryPanel(extensionUri: vscode.Uri, fenbiChannel: vscode.OutputChannel, params?: any) {
+    const panelParams = {
+      ...params,
+      router: "/detail",
+      name: params?.name || "练习历史"
+    };
+    // 如果已存在 Panel，则显示提示
+    if (TemplatePanel.instance) {
+      vscode.window.showInformationMessage(
+        "已存在一个打开的面板，请先关闭它再创建新的面板。",
+        "确定"
+      );
+      return;
     }
+
+    let exerciseResult = await getExercisesUrl({
+      category: panelParams.category || "xingce",
+      combineKey: panelParams.combineKey
+    })
+    const staticUrl = exerciseResult?.data?.staticUrl?.urls?.[0];
+    const userAnswers = exerciseResult?.data?.userAnswers;
+    const questionResult = await getQuestion(panelParams.category || "xingce", staticUrl);
+    questionResult["userAnswers"] = userAnswers;
+    questionResult["exerciseId"] = exerciseResult?.data?.ancientExerciseId?.id;
+    questionResult["combinKey"] = panelParams.category;
+    let panelTitle = params?.name || 'Template Panel';
+    const panel = vscode.window.createWebviewPanel('templateWebviewPanel', panelTitle, vscode.ViewColumn.One, {
+      enableScripts: true,
+      retainContextWhenHidden: true,
+      localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')]
+    });
+    TemplatePanel.instance = new TemplatePanel(panel, extensionUri, fenbiChannel, panelParams, questionResult);
+  }
+  public static async createHistoryAnswerPanel(extensionUri: vscode.Uri, fenbiChannel: vscode.OutputChannel, params: any) {
+    const panelParams = {
+      ...params,
+      router: "/detail",
+      name: params?.name || "练习历史"
+    };
+    // 如果已存在 Panel，则显示提示
+    if (TemplatePanel.instance) {
+      vscode.window.showInformationMessage(
+        "已存在一个打开的面板，请先关闭它再创建新的面板。",
+        "确定"
+      );
+      return;
+    }
+    const exerciseResult = await TemplatePanel.fetchQuestionData(params, fenbiChannel);
+    let panelTitle = params?.name || 'Template Panel';
+    const panel = vscode.window.createWebviewPanel('templateWebviewPanel', panelTitle, vscode.ViewColumn.One, {
+      enableScripts: true,
+      retainContextWhenHidden: true,
+      localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')]
+    });
+    TemplatePanel.instance = new TemplatePanel(panel, extensionUri, fenbiChannel, panelParams, exerciseResult);
+  }
+  // 创建历年面板
+  public static async createPastYearsPanel(extensionUri: vscode.Uri, fenbiChannel: vscode.OutputChannel, params?: any) {
+    const panelParams = {
+      ...params,
+      router: "/detail",
+      name: params?.name || "历年题库"
+    };    // 如果已存在 Panel，则显示提示
+    // 如果已存在 Panel，则显示提示
+    if (TemplatePanel.instance) {
+      vscode.window.showInformationMessage(
+        "已存在一个打开的面板，请先关闭它再创建新的面板。",
+        "确定"
+      );
+      return;
+    }
+    let cachedQuestionData = await TemplatePanel.fetchQuestionData(params, fenbiChannel);
+    let panelTitle = params?.name || 'Template Panel';
+    const panel = vscode.window.createWebviewPanel('templateWebviewPanel', panelTitle, vscode.ViewColumn.One, {
+      enableScripts: true,
+      retainContextWhenHidden: true,
+      localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')]
+    });
+    TemplatePanel.instance = new TemplatePanel(panel, extensionUri, fenbiChannel, panelParams, cachedQuestionData);
   }
 
-  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, fenbiChannel: vscode.OutputChannel, params?: any, cachedQuestionData?: any, panelId?: string) {
+
+  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, fenbiChannel: vscode.OutputChannel, params?: any, data?: any) {
     this.panel = panel;
-    this.extensionUri = extensionUri;
     this.fenbiChannel = fenbiChannel;
     this.pendingParams = params;
-    this.cachedQuestionData = cachedQuestionData;
-    this.panelId = panelId || Date.now().toString();
+    this.cachedQuestionData = data;
 
     this.panel.webview.html = renderWebviewHtml(this.panel.webview, extensionUri, 'panel', fenbiChannel);
 
@@ -136,7 +152,7 @@ export class TemplatePanel {
 
       if (command === "panelReady") {
         this.isWebviewReady = true;
-        this.fenbiChannel.appendLine(`Panel ${this.panelId} is ready`);
+        this.fenbiChannel.appendLine(`Panel is ready`);
         if (this.pendingParams) {
           const router = this.pendingParams.router || "/detail";
           this.postMessage({
@@ -149,9 +165,9 @@ export class TemplatePanel {
         }
       }
       if (command === "detailReady") {
-        this.fenbiChannel.appendLine(`Panel ${this.panelId} detail page ready`);
+        this.fenbiChannel.appendLine(`Panel detail page ready`);
         if (this.cachedQuestionData) {
-          this.fenbiChannel.appendLine(`Sending cached question data to panel ${this.panelId}`);
+          this.fenbiChannel.appendLine(`Sending cached question data to panel`);
           this.panel.webview.postMessage({
             command: "getQuestion",
             data: this.cachedQuestionData
@@ -169,9 +185,9 @@ export class TemplatePanel {
         }
       }
       if (command === "answerReady") {
-        this.fenbiChannel.appendLine(`Panel ${this.panelId} detail page ready`);
+        this.fenbiChannel.appendLine(`Panel answer page ready`);
         if (this.cachedQuestionData) {
-          this.fenbiChannel.appendLine(`Sending cached question data to panel ${this.panelId}`);
+          this.fenbiChannel.appendLine(`Sending cached question data to panel`);
           this.panel.webview.postMessage({
             command: "getQuestion",
             data: this.cachedQuestionData
@@ -195,7 +211,7 @@ export class TemplatePanel {
         if (command === "submit") this.submit(postData);
         if (command === "jumpFenbi") this.jumpFenbi(postData);
         if (command === "answer") {
-          this.fenbiChannel.appendLine(`Answer received from panel ${this.panelId}: ${JSON.stringify(postData)}`);
+          this.fenbiChannel.appendLine(`Answer received from panel: ${JSON.stringify(postData)}`);
           this.studyTime(postData);
           if (message.inc) this.inc(postData);
         }
@@ -205,8 +221,8 @@ export class TemplatePanel {
     });
 
     this.panel.onDidDispose(() => {
-      TemplatePanel.panels.delete(this.panelId);
-      this.fenbiChannel.appendLine(`Panel ${this.panelId} disposed, remaining panels: ${TemplatePanel.panels.size}`);
+      TemplatePanel.instance = null;
+      this.fenbiChannel.appendLine(`Panel disposed`);
     });
   }
 
@@ -441,4 +457,46 @@ export class TemplatePanel {
       time: Math.floor((Date.now() - params.startTime) / 1000),
     });
   }
+  private static async fetchQuestionData(params: any, fenbiChannel: vscode.OutputChannel): Promise<any> {
+    try {
+      const category = params?.category || "xingce";
+      const id = params?.id;
+
+      if (!id) return null;
+
+      let postCombinKey = "";
+      const idParams: any = { keypointId: id };
+      if (category === "shenlun") {
+        idParams.count = 1;
+      }
+      const idRes = await getExercisesId(category, idParams);
+      postCombinKey = idRes.key;
+
+      const exerciseResult = await getExercisesUrl({
+        category,
+        combineKey: postCombinKey,
+      });
+
+      if (exerciseResult?.code == -1) {
+        fenbiChannel.appendLine(`Fetch question error: ${exerciseResult.message}`);
+        return null;
+      }
+
+      const staticUrl = exerciseResult?.data?.staticUrl?.urls?.[0];
+      const userAnswers = exerciseResult?.data?.userAnswers;
+      const questionResult = await getQuestion(category, staticUrl);
+
+      const solutionResult = await getSolution(category, postCombinKey);
+      questionResult["userAnswers"] = userAnswers;
+      questionResult["exerciseId"] = exerciseResult?.data?.ancientExerciseId?.id;
+      questionResult["combinKey"] = postCombinKey;
+      questionResult["solutions"] = solutionResult.data?.solutions || [];
+
+      return questionResult;
+    } catch (error) {
+      fenbiChannel.appendLine(`Error fetching question data: ${error}`);
+      return null;
+    }
+  }
+
 }

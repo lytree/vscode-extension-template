@@ -25,7 +25,6 @@ export default class WebviewHandle {
   private fenbiChannel: vscode.OutputChannel;
   private webviewPanel: vscode.WebviewView;
   private context: vscode.ExtensionContext;
-  private panelParams: any = null;
 
   constructor(webviewPanel: vscode.WebviewView, fenbiChannel: vscode.OutputChannel, context: vscode.ExtensionContext) {
     this.fenbiChannel = fenbiChannel;
@@ -36,45 +35,72 @@ export default class WebviewHandle {
     this.webviewPanel.webview.onDidReceiveMessage((message: { [key: string]: any }) => {
       const { postData = {}, command = "" } = message || {};
       this.fenbiChannel.appendLine(`WebviewHandle Received message: ${command} with data: ${JSON.stringify(postData)}`);
-      if (command === "pageInit") this.pageInit(postData);
-      if (command === "changeCategory") this.changeCategory(postData);
-      if (command === "getQuestion") this.getQuestion(postData);
-      if (command === "getSolution") this.getSolutions(postData);
-      if (command === "getQuickQuestion") this.getQuickQuestion(postData);
-      if (command === "submit") this.submit(postData);
-      if (command === "jumpFenbi") this.jump(postData);
-      if (command === "changeQuestionCount") this.changeQuestionCount(postData);
+
+      // 题库相关消息
+      if (command === "tiku:pageInit") this.tikuPageInit(postData);
+      if (command === "tiku:changeCategory") this.changeCategory(postData);
+      if (command === "tiku:getQuestion") this.getQuestion(postData);
+      if (command === "tiku:getSolution") this.getSolutions(postData);
+      if (command === "tiku:getQuickQuestion") this.getQuickQuestion(postData);
+      if (command === "tiku:submit") this.submit(postData);
+      if (command === "tiku:changeQuestionCount") this.changeQuestionCount(postData);
+      if (command === "tiku:Detail") {
+        TemplatePanel.createTikuPanel(this.context.extensionUri, this.fenbiChannel, postData);
+      }
+      // 历史相关消息
+      if (command === "history:getHistory") this.getHistory(postData);
+      if (command === "history:Detail") {
+        TemplatePanel.createHistoryPanel(this.context.extensionUri, this.fenbiChannel, postData);
+      }
+      if (command === "history:Answer") {
+        TemplatePanel.createHistoryAnswerPanel(this.context.extensionUri, this.fenbiChannel, postData);
+      }
+      // 历年相关消息
+      if (command === "pastYears:getPapers") this.getPapers(postData);
+      if (command === "pastYears:getSubLabels") this.getSubLabels(postData);
+      if (command === "pastYears:Detail") {
+        TemplatePanel.createPastYearsPanel(this.context.extensionUri, this.fenbiChannel, postData);
+      }
+      // 通用消息
       if (command === "answer") {
         this.fenbiChannel.appendLine(`Answer submitted: ${JSON.stringify(postData)}`);
         this.studyTime(postData);
         if (message.inc) this.inc(postData);
       }
-      if (command === "history") {
-        this.getHistory(postData);
-      }
-      if (command === "papers") {
-        this.getPapers(postData);
-      }
-      if (command === "subLabels") {
-        this.getSubLabels(postData);
-      }
+
+      if (command === "jumpFenbi") this.jump(postData);
       if (command === "openInBrowser") {
         console.log("openInBrowser", postData);
         vscode.env.openExternal(vscode.Uri.parse(postData.url));
       }
-      if (command === "createPanel") {
-        // 存储参数
-        this.panelParams = postData;
+    });
+  }
+  async getHistoryDetail(postData: any) {
 
-        // 创建 Panel 并传递参数
-        TemplatePanel.createOrShow(this.context.extensionUri, this.fenbiChannel, postData);
-      }
+  }
+
+  // 题库页面初始化
+  async tikuPageInit(postData: any) {
+    const cacheResult = await getCache(postData?.categoryId || "xingce");
+    const res = await getCategories(postData?.categoryId || "xingce");
+
+    this.webviewPanel.webview.postMessage({
+      command: "tiku:init",
+      data: {
+        menu: res,
+        cacheResult: cacheResult || {},
+      },
+    });
+
+    this.webviewPanel.webview.postMessage({
+      command: "tiku:pageCache",
+      data: cacheResult,
     });
   }
   async getSubLabels(postData: any) {
     const res = await getSubLabels(postData);
     this.webviewPanel.webview.postMessage({
-      command: "labels",
+      command: "pastYears:labels",
       data: res,
     });
   }
@@ -91,7 +117,7 @@ export default class WebviewHandle {
       labelId: labelId || undefined,
     });
     this.webviewPanel.webview.postMessage({
-      command: "pastYears",
+      command: "pastYears:data",
       data: res,
     });
   }
@@ -109,64 +135,8 @@ export default class WebviewHandle {
       cursor: cursor || "",
     });
     this.webviewPanel.webview.postMessage({
-      command: "sendhistory",
+      command: "history:data",
       data: res.data,
-    });
-  }
-
-  async pageInit(postData: any) {
-    const cacheResult = await getCache(postData?.categoryId || "xingce");
-    const res = await getCategories(postData?.categoryId || "xingce");
-
-    const config = vscode.workspace.getConfiguration("fenbiTools");
-
-    // 获取当前主题色
-    const themeColor = this.getThemeColor();
-
-    this.webviewPanel.webview.postMessage({
-      command: "setting",
-      data: config,
-    });
-
-    this.webviewPanel.webview.postMessage({
-      command: "themeChange",
-      data: themeColor,
-    });
-
-    this.webviewPanel.webview.postMessage({
-      command: "init",
-      data: {
-        menu: res,
-        cacheResult: cacheResult || {},
-      },
-    });
-
-    this.webviewPanel.webview.postMessage({
-      command: "pageCache",
-      data: cacheResult,
-    });
-
-    // 监听主题变化
-    this.listenForThemeChanges();
-  }
-
-  // 获取当前主题色
-  private getThemeColor() {
-    const isDark = vscode.window.activeColorTheme.kind === vscode.ColorThemeKind.Dark;
-    return {
-      isDark,
-      theme: vscode.window.activeColorTheme.kind
-    };
-  }
-
-  // 监听主题变化
-  private listenForThemeChanges() {
-    vscode.window.onDidChangeActiveColorTheme(() => {
-      const themeColor = this.getThemeColor();
-      this.webviewPanel.webview.postMessage({
-        command: "themeChange",
-        data: themeColor,
-      });
     });
   }
 

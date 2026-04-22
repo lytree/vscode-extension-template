@@ -27,7 +27,7 @@ const PastYears = ({ labelId }: { labelId?: string }) => {
   React.useEffect(() => {
     setLoading(true);
     vscode.postMessage({
-      command: "papers",
+      command: "pastYears:getPapers",
       postData: {
         labelId: currentLabelId,
         page: currentPage.toString(),
@@ -37,7 +37,7 @@ const PastYears = ({ labelId }: { labelId?: string }) => {
   }, [currentLabelId, currentPage, pageSize]);
   React.useEffect(() => {
     vscode.postMessage({
-      command: "subLabels",
+      command: "pastYears:getSubLabels",
       postData: {
       },
     });
@@ -46,7 +46,7 @@ const PastYears = ({ labelId }: { labelId?: string }) => {
     // 监听来自扩展的消息
     const handleMessage = (event: any) => {
       const message = event.data;
-      if (message.command === "pastYears") {
+      if (message.command === "pastYears:data") {
         // 使用从扩展获取的历年题库数据
         console.log("pastYears", message);
         setPastYears(message.data.list || []);
@@ -54,8 +54,7 @@ const PastYears = ({ labelId }: { labelId?: string }) => {
         setCurrentPage(message.data.pageInfo?.currentPage || 0);
         setLoading(false);
       }
-      if (message.command === "labels") {
-
+      if (message.command === "pastYears:labels") {
         setCacheData(message.data || {});
       }
     };

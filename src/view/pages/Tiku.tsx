@@ -93,18 +93,21 @@ const Tiku = () => {
     const handleMessage = (event: any) => {
       const message = event.data;
 
-      if (message.command === "init") {
+      if (message.command === "tiku:init") {
         // 使用从扩展获取的分类数据
         setCategories(message.data.menu || []);
         setCacheData(message.data.cacheResult);
         setLoading(false);
+      }
+      if (message.command === "tiku:pageCache") {
+        setCacheData(message.data || {});
       }
     };
 
     window.addEventListener("message", handleMessage);
 
     // 初始化时请求数据
-    vscode.postMessage({ command: "pageInit" });
+    vscode.postMessage({ command: "tiku:pageInit" });
 
     return () => {
       window.removeEventListener("message", handleMessage);
@@ -114,7 +117,7 @@ const Tiku = () => {
   const handleCategoryClick = (item: CategoryItem) => {
     // 发送消息到扩展，创建 Panel 并传入参数
     vscode.postMessage({
-      command: "createPanel",
+      command: "tiku:Detail",
       postData: {
         id: item.id,
         name: item.name,

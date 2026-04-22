@@ -29,7 +29,7 @@ const History = ({ categoryId }: { categoryId?: string }) => {
     setHasMore(true);
 
     vscode.postMessage({
-      command: "history",
+      command: "history:getHistory",
       postData: {
         categoryId: currentCategoryId,
         category: "xingce",
@@ -44,7 +44,7 @@ const History = ({ categoryId }: { categoryId?: string }) => {
     if (!loadingMore && hasMore) {
       setLoadingMore(true);
       vscode.postMessage({
-        command: "history",
+        command: "history:getHistory",
         postData: {
           categoryId: currentCategoryId,
           category: "xingce",
@@ -64,7 +64,7 @@ const History = ({ categoryId }: { categoryId?: string }) => {
         alert(message.data.message);
       }
 
-      if (message.command === "sendhistory") {
+      if (message.command === "history:data") {
         console.log("history", message);
         const newItems = message.data.historyItems || [];
 
@@ -113,11 +113,11 @@ const History = ({ categoryId }: { categoryId?: string }) => {
   const goDetail = ({ exerciseKey }: { exerciseKey?: string }) => {
     // 发送消息到扩展，创建 Panel 并传入参数
     vscode.postMessage({
-      command: "createPanel",
+      command: "history:Detail",
       postData: {
         combineKey: exerciseKey,
         type: 1,
-        examType: examType,
+        category: examType,
         router: "/detail",
       }
     });
