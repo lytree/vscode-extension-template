@@ -65,3 +65,64 @@ export type TLabel = {
 };
 
 export type TLabelsData = TLabel[];
+
+// 考试类型配置
+export const EXAM_TYPES = [
+  { value: "xingce", label: "行测" },
+  { value: "shenlun", label: "申论" },
+] as const;
+
+// 考试类型值
+export type ExamType = (typeof EXAM_TYPES)[number]["value"];
+
+// 历年题库数据结构类型
+export interface PastYearItem {
+  combineKey: string;
+  id: number;
+  name: string;
+  date: string;
+  status: number;
+  createdTime: number;
+  type: number;
+  newPaper: boolean;
+  topic: any;
+  paperMeta: {
+    id: number;
+    exerciseCount: number;
+    averageScore: number;
+    difficulty: number;
+    highestScore: number;
+  };
+  exercise: any;
+  hasVideo: number;
+  encodeCheckInfo: string;
+  [key: string]: any;
+}
+
+// 分类数据结构类型
+export interface CategoryItem {
+  id: number;
+  name: string;
+  count: number;
+  optional: boolean;
+  children: CategoryItem[] | null;
+  [key: string]: any;
+}
+
+// 最后答题记录
+export interface TLastAnswerRecord {
+  lastCount: number | null;
+  lastAnswer: number | null;
+  lastQuestionId: number | null | undefined;
+}
+
+// 主题设置
+export interface TTheme {
+  isDark: boolean;
+  theme: number;
+}
+
+// 选项映射
+export interface TRadioMap {
+  [key: string]: string;
+}

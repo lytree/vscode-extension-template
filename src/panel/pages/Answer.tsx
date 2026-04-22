@@ -1,19 +1,14 @@
 import * as React from "react";
-import type { TSolutionData, TQuestionData } from "../../types";
+import type { TSolutionData, TQuestionData, TLastAnswerRecord } from "../../types";
 import { QuestionItem } from "../components/question-item";
 import { ShenlunItem } from "../components/shenlun-item";
-import { useSetting } from "../../view/components/hooks";
 import { getVscodeApi } from "../../view/utils/vscodeApi";
 import { Button } from "../../components/ui/button";
 import { Card, CardHeader, CardTitle, CardAction, CardContent } from "../../components/ui/card";
 import { groupByMaterialIndexesTo2DArray } from "../../view/utils/analyze";
 import { useNavigate } from "react-router-dom";
 
-interface TLastAnswerRecord {
-  lastCount: number | null;
-  lastAnswer: number | null;
-  lastQuestionId: number | null | undefined;
-}
+
 
 const vscode = getVscodeApi();
 /**
@@ -21,7 +16,6 @@ const vscode = getVscodeApi();
  * @returns 
  */
 function Answer() {
-  const { setting } = useSetting();
   const navigate = useNavigate();
   const [isFirst, setFirst] = React.useState(false);
   const [startTime, setStartTime] = React.useState(0);
@@ -48,7 +42,7 @@ function Answer() {
         // 处理从 Index 页面传递过来的参数
         console.log("Panel initialized with params:", message.postData);
         // 调用 getSolution 函数获取问题信息
-        getSolution({ category: setting?.categoryId, id, type });
+        getSolution({ category: "xingce", id, type });
       }
 
       if (message.command === "getQuestion") {
@@ -79,7 +73,7 @@ function Answer() {
     vscode.postMessage({ command: 'answerReady' });
 
     return () => window.removeEventListener("message", handleMessage);
-  }, [setting?.categoryId, navigate]);
+  }, [navigate]);
 
   const getSolution = ({
     category,
@@ -111,7 +105,7 @@ function Answer() {
       postData: {
         startTime: startTime,
         combineKey: combineKey,
-        category: setting?.categoryId,
+        category: "xingce",
         answer: text,
       },
     });
@@ -121,7 +115,7 @@ function Answer() {
     vscode.postMessage({
       command: "jumpFenbi",
       postData: {
-        category: setting?.categoryId,
+        category: "xingce",
         exerciseId: questionData?.exerciseId,
       },
     });
@@ -177,7 +171,7 @@ function Answer() {
       {/* 题目容器 */}
       <div className="question-container flex-1 overflow-y-auto p-4">
         {(solutions || []).map((item: any, index: number) => {
-          if (setting?.categoryId === "shenlun") {
+          if (false) {
             return (
               <Card key={`${page}-${index}`} className="mb-6 rounded-lg shadow-sm">
                 <CardHeader className="flex justify-between items-start gap-4 pb-2">

@@ -1,15 +1,11 @@
 import * as React from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { HistoryItem } from "../components/history-item";
-import { useSetting } from "../components/hooks";
 import { getVscodeApi } from "../utils/vscodeApi";
+import { EXAM_TYPES, type ExamType } from "../../types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 
 const vscode = getVscodeApi();
-
-// 考试类型
-type ExamType = "shenlun" | "xingce";
 
 const History = ({ categoryId }: { categoryId?: string }) => {
   const [historyList, setHistoryList] = React.useState<any>([]);
@@ -31,7 +27,7 @@ const History = ({ categoryId }: { categoryId?: string }) => {
     setCurrentcursor("");
     setHistoryList([]);
     setHasMore(true);
-    
+
     vscode.postMessage({
       command: "history",
       postData: {
@@ -42,7 +38,7 @@ const History = ({ categoryId }: { categoryId?: string }) => {
       },
     });
   }, [currentCategoryId]);
-  
+
   // 加载更多数据
   const loadMore = () => {
     if (!loadingMore && hasMore) {
@@ -71,7 +67,7 @@ const History = ({ categoryId }: { categoryId?: string }) => {
       if (message.command === "sendhistory") {
         console.log("history", message);
         const newItems = message.data.historyItems || [];
-        
+
         if (currentcursor) {
           // 加载更多数据，追加到现有列表
           setHistoryList((prev: any) => [...prev, ...newItems]);
@@ -79,7 +75,7 @@ const History = ({ categoryId }: { categoryId?: string }) => {
           // 首次加载数据，替换整个列表
           setHistoryList(newItems);
         }
-        
+
         setCurrentcursor(message.data.cursor || null);
         setHasMore(!!message.data.cursor);
         setLoading(false);
@@ -93,22 +89,22 @@ const History = ({ categoryId }: { categoryId?: string }) => {
       window.removeEventListener("message", handleMessage);
     };
   }, [currentcursor]);
-  
+
   // 滚动监听，实现下拉加载
   React.useEffect(() => {
     const handleScroll = () => {
       const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
       const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
       const clientHeight = document.documentElement.clientHeight || window.innerHeight;
-      
+
       // 当滚动到距离底部 100px 时加载更多
       if (scrollTop + clientHeight >= scrollHeight - 100) {
         loadMore();
       }
     };
-    
+
     window.addEventListener("scroll", handleScroll);
-    
+
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
@@ -133,32 +129,35 @@ const History = ({ categoryId }: { categoryId?: string }) => {
         <div className="flex items-center gap-2">
           <span className="text-lg font-semibold">练习历史</span>
         </div>
-        <Select value={examType} onValueChange={(value: ExamType) => setExamType(value)}>
+        <Select items={EXAM_TYPES} value={examType} onValueChange={(value: ExamType) => setExamType(value)}>
           <SelectTrigger className="w-32">
-            <SelectValue />
+            <SelectValue>
+
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="shenlun">申论</SelectItem>
-            <SelectItem value="xingce">行测</SelectItem>
+            {EXAM_TYPES.map((type) => (
+              <SelectItem key={type.value} value={type.value}>
+                {type.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
       <div className="p-3">
         <div className="flex gap-2">
-          <Link
-            to="/history/exercise"
+          <Button
             className={`px-4 py-2 rounded-md transition-colors ${currentCategoryId === "3" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
             onClick={() => setCurrentCategoryId("3")}
           >
             练习
-          </Link>
-          <Link
-            to="/history/paper"
+          </Button>
+          <Button
             className={`px-4 py-2 rounded-md transition-colors ${currentCategoryId === "1" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
             onClick={() => setCurrentCategoryId("1")}
           >
             试卷
-          </Link>
+          </Button>
         </div>
       </div>
       <div className="p-4">
@@ -208,7 +207,7 @@ const History = ({ categoryId }: { categoryId?: string }) => {
             <div className="text-sm text-muted-foreground">加载更多中...</div>
           </div>
         )}
-        
+
         {!loadingMore && !hasMore && (
           <div className="mt-4 flex justify-center items-center py-4">
             <div className="text-sm text-muted-foreground">没有更多数据了</div>

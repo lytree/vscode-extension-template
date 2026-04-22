@@ -1,6 +1,4 @@
-interface TRadioMap {
-  [key: string]: string;
-}
+import type { TRadioMap } from "../../types";
 export const radioMap: TRadioMap = {
   "1": "A",
   "2": "B",

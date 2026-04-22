@@ -1,23 +1,12 @@
 import * as React from "react";
-import type { TCacheData, TSetting } from "../../types";
+import { EXAM_TYPES, type TCacheData, type TSetting, type ExamType, type CategoryItem } from "../../types";
 import { getVscodeApi } from "../utils/vscodeApi";
 import { Button } from "../../components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 
 const vscode = getVscodeApi();
 
-// 考试类型
-type ExamType = "shenlun" | "xingce";
 
-// 分类数据结构类型
-interface CategoryItem {
-  id: number;
-  name: string;
-  count: number;
-  optional: boolean;
-  children: CategoryItem[] | null;
-  [key: string]: any;
-}
 
 // 可折叠导航项组件
 const CollapsibleNavItem: React.FC<{
@@ -136,17 +125,6 @@ const Tiku = () => {
     });
   };
 
-  const handleCustomPractice = () => {
-    // 发送消息到扩展，创建 Panel 并传入参数
-    vscode.postMessage({
-      command: "createPanel",
-      postData: {
-        type: 2,
-        categoryId: examType,
-        router: "/detail",
-      }
-    });
-  };
 
   return (
     <div className="h-full rounded-lg shadow-sm">
@@ -168,13 +146,17 @@ const Tiku = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Select value={examType} onValueChange={(value: ExamType) => setExamType(value)}>
+              <Select items={EXAM_TYPES} value={examType} onValueChange={(value: ExamType) => setExamType(value)}>
                 <SelectTrigger className="w-32">
-                  <SelectValue />
+                  <SelectValue>
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="shenlun">申论</SelectItem>
-                  <SelectItem value="xingce">行测</SelectItem>
+                  {EXAM_TYPES.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

@@ -1,9 +1,8 @@
 import * as React from "react";
-import type { TSolutionData, TQuestionData, TQuestionItem } from "../../types";
+import type { TSolutionData, TQuestionData, TQuestionItem, TLastAnswerRecord } from "../../types";
 import { QuestionItem } from "../components/question-item";
 import { ShenlunItem } from "../components/shenlun-item";
 import { CanvasDrawing } from "../components/canvas-drawing";
-import { useSetting } from "../../view/components/hooks";
 import { getVscodeApi } from "../../view/utils/vscodeApi";
 import { Button } from "../../components/ui/button";
 import { Skeleton } from "../../components/ui/skeleton";
@@ -11,11 +10,7 @@ import { LoadingSpinner } from "../../components/ui/loading-spinner";
 import { groupByMaterialIndexesTo2DArray } from "../../view/utils/analyze";
 import { useNavigate } from "react-router-dom";
 
-interface TLastAnswerRecord {
-  lastCount: number | null;
-  lastAnswer: number | null;
-  lastQuestionId: number | null | undefined;
-}
+
 
 const vscode = getVscodeApi();
 /**
@@ -23,7 +18,6 @@ const vscode = getVscodeApi();
  * @returns 
  */
 function Detail() {
-  const { setting } = useSetting();
   const navigate = useNavigate();
   const [isFirst, setFirst] = React.useState(false);
   const [startTime, setStartTime] = React.useState(0);
@@ -49,7 +43,7 @@ function Detail() {
         // 处理从 Index 页面传递过来的参数
         console.log("Panel initialized with params:", message.postData);
         // 调用 getQuestion 函数获取问题信息
-        getQuestion({ category: setting?.categoryId, id, type });
+        getQuestion({ category: "xingce", id, type });
       }
 
       if (message.command === "getQuestion") {
@@ -77,7 +71,7 @@ function Detail() {
     vscode.postMessage({ command: 'detailReady' });
 
     return () => window.removeEventListener("message", handleMessage);
-  }, [setting?.categoryId, navigate]);
+  }, [navigate]);
 
   React.useEffect(() => {
     if (isFirst) return;
@@ -126,7 +120,7 @@ function Detail() {
         ...item,
         startTime: startTime,
         combineKey: combineKey,
-        category: setting?.categoryId,
+        category: "xingce",
         answer: e.target.value,
         exerciseId: questionData?.exerciseId,
       },
@@ -140,7 +134,7 @@ function Detail() {
       postData: {
         startTime: startTime,
         combineKey: combineKey,
-        category: setting?.categoryId,
+        category: "xingce",
         answer: text,
       },
     });
@@ -154,7 +148,7 @@ function Detail() {
         postData: {
           startTime: startTime,
           combineKey: combineKey,
-          category: setting?.categoryId,
+          category: "xingce",
         },
       });
     }
@@ -164,7 +158,7 @@ function Detail() {
     vscode.postMessage({
       command: "jumpFenbi",
       postData: {
-        category: setting?.categoryId,
+        category: "xingce",
         exerciseId: questionData?.exerciseId,
       },
     });
@@ -177,7 +171,7 @@ function Detail() {
 
   if (loading) {
     return (
-      <div className="h-full bg-card p-4 flex items-center justify-center" style={{ color: setting?.color, fontSize: setting?.fontSize }}>
+      <div className="h-full bg-card p-4 flex items-center justify-center">
         <div className="flex flex-col items-center">
           <div className="space-y-2">
             <Skeleton className="h-8 w-8 rounded-full" />
@@ -190,7 +184,7 @@ function Detail() {
   }
 
   return (
-    <div className="h-full bg-card p-4" style={{ color: setting?.color, fontSize: setting?.fontSize }}>
+    <div className="h-full bg-card p-4">
       <h1 className="text-lg font-medium"></h1>
       <div className="top-bar flex justify-between items-center mb-4">
         <Button
@@ -217,7 +211,7 @@ function Detail() {
       </div>
       <div className="question-container overflow-y-auto max-h-[calc(100%-120px)]">
         {(questions || []).map((item: any, index: number) => {
-          if (setting?.categoryId === "shenlun") {
+          if (false) {
             return (
               <div key={`${page}-${index}`} className="question-item mb-6">
                 <ShenlunItem

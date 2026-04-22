@@ -2,7 +2,6 @@ import * as React from "react";
 import type { TMaterials, TQuestionItem, TSolutionItem } from "../../types";
 import { radioMap } from "../../view/utils/constant";
 import { setImg } from "../../view/utils/setImg";
-import { useSetting } from "../../view/components/hooks";
 import { OptionGroup } from "@/components/ui/option-group";
 
 interface TQuestionItemProps {

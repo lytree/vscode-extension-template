@@ -1,36 +1,12 @@
 import * as React from "react";
-import type { TLabelsData, TSetting } from "../../types";
+import { EXAM_TYPES, type TLabelsData, type ExamType, type PastYearItem } from "../../types";
 import { getVscodeApi } from "../utils/vscodeApi";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
+import { Button } from "@/components/ui/button";
 
 const vscode = getVscodeApi();
 
-// 考试类型
-type ExamType = "shenlun" | "xingce";
 
-// 历年题库数据结构类型
-interface PastYearItem {
-  combineKey: string;
-  id: number;
-  name: string;
-  date: string;
-  status: number;
-  createdTime: number;
-  type: number;
-  newPaper: boolean;
-  topic: any;
-  paperMeta: {
-    id: number;
-    exerciseCount: number;
-    averageScore: number;
-    difficulty: number;
-    highestScore: number;
-  };
-  exercise: any;
-  hasVideo: number;
-  encodeCheckInfo: string;
-  [key: string]: any;
-}
 
 
 
@@ -145,13 +121,18 @@ const PastYears = ({ labelId }: { labelId?: string }) => {
                 </svg>
               </div>
             </div>
-            <Select value={examType} onValueChange={(value: ExamType) => setExamType(value)}>
+            <Select items={EXAM_TYPES} value={examType} onValueChange={(value: ExamType) => setExamType(value)}>
               <SelectTrigger className="w-32">
-                <SelectValue />
+                <SelectValue>
+
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="shenlun">申论</SelectItem>
-                <SelectItem value="xingce">行测</SelectItem>
+                {EXAM_TYPES.map((type) => (
+                  <SelectItem key={type.value} value={type.value}>
+                    {type.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -161,13 +142,13 @@ const PastYears = ({ labelId }: { labelId?: string }) => {
           <div className="px-3 py-2 border-b border-border overflow-x-auto">
             <div className="flex gap-2 min-w-max">
               {cacheData?.map((region) => (
-                <button
+                <Button
                   key={region.id}
                   className={`px-3 py-1 rounded-md text-sm transition-colors ${selectedRegion === region.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
                   onClick={() => handleRegionChange(region.id)}
                 >
                   {region.name}
-                </button>
+                </Button>
               )) || (
                   <div className="text-sm text-muted-foreground">加载地区数据中...</div>
                 )}
@@ -217,23 +198,23 @@ const PastYears = ({ labelId }: { labelId?: string }) => {
 
           {/* 分页组件 */}
           <div className="p-3 border-t border-border flex justify-center items-center gap-2">
-            <button
+            <Button
               className={`px-3 py-1 rounded-md text-sm transition-colors ${currentPage === 1 ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-primary text-primary-foreground hover:bg-primary/80"}`}
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
             >
               上一页
-            </button>
+            </Button>
             <span className="text-sm text-muted-foreground">
               第 {currentPage + 1} 页，共 {Math.ceil(totalItems / pageSize)} 页
             </span>
-            <button
+            <Button
               className={`px-3 py-1 rounded-md text-sm transition-colors ${currentPage >= Math.ceil(totalItems / pageSize) ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-primary text-primary-foreground hover:bg-primary/80"}`}
               onClick={() => setCurrentPage(prev => prev + 1)}
               disabled={currentPage >= Math.ceil(totalItems / pageSize)}
             >
               下一页
-            </button>
+            </Button>
           </div>
         </div>
       )}
