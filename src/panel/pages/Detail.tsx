@@ -7,6 +7,7 @@ import { getVscodeApi } from "../../view/utils/vscodeApi";
 import { Button } from "../../components/ui/button";
 import { Skeleton } from "../../components/ui/skeleton";
 import { LoadingSpinner } from "../../components/ui/loading-spinner";
+import { AlertDialog } from "../../components/ui/alert-dialog";
 import { groupByMaterialIndexesTo2DArray } from "../../view/utils/analyze";
 import { useNavigate } from "react-router-dom";
 
@@ -30,23 +31,18 @@ function Detail() {
   const [page, setPage] = React.useState<number>(1);
   const [questionData, setQuestionData] = React.useState<TQuestionData | null>(null);
   const [combineKey, setCombineKey] = React.useState<string>("");
+  const [showSubmitConfirm, setShowSubmitConfirm] = React.useState(false);
 
   // 统一处理所有消息
   React.useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       const message = event.data;
-      console.log('Detail received message:', message);
+
       setLoading(false);
 
-      if (message.command === "detailInit") {
-        const { id, name, type } = message.postData;
-        // 处理从 Index 页面传递过来的参数
-        console.log("Panel initialized with params:", message.postData);
-        // 调用 getQuestion 函数获取问题信息
-        getQuestion({ category: "xingce", id, type });
-      }
 
       if (message.command === "getQuestion") {
+
         setQuestionData(message.data);
         setCombineKey(message.data.combineKey);
       }
@@ -105,6 +101,7 @@ function Detail() {
   };
 
   const onRaioChange = (e: any, item: TQuestionItem, index: number) => {
+
     vscode.postMessage({
       command: "answer",
       inc: true,
@@ -133,17 +130,19 @@ function Detail() {
   };
 
   const onSubmit = () => {
-    if (window.confirm("确认提交？")) {
-      setLoading(true);
-      vscode.postMessage({
-        command: "submit",
-        postData: {
-          startTime: startTime,
-          combineKey: combineKey,
-          category: "xingce",
-        },
-      });
-    }
+    setShowSubmitConfirm(true);
+  };
+
+  const handleConfirmSubmit = () => {
+    setLoading(true);
+    vscode.postMessage({
+      command: "submit",
+      postData: {
+        startTime: startTime,
+        combineKey: combineKey,
+        category: "xingce",
+      },
+    });
   };
 
   const onJump = () => {
@@ -158,7 +157,6 @@ function Detail() {
 
   const questions = groupByMaterialIndexesTo2DArray(questionData?.questions || []);
 
-  console.log("questions", JSON.stringify(questionData));
   if (loading) {
     return (
       <div className="h-full bg-card p-4 flex items-center justify-center">
@@ -228,6 +226,16 @@ function Detail() {
       </div>
 
       <CanvasDrawing onClose={() => { }} />
+
+      <AlertDialog
+        open={showSubmitConfirm}
+        onOpenChange={setShowSubmitConfirm}
+        title="确认提交"
+        description="确定要提交答案吗？提交后将无法修改。"
+        cancelText="取消"
+        confirmText="确定"
+        onConfirm={handleConfirmSubmit}
+      />
     </div>
 
   );

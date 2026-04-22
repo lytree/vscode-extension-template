@@ -65,7 +65,7 @@ const History = ({ categoryId }: { categoryId?: string }) => {
       }
 
       if (message.command === "history:data") {
-        console.log("history", message);
+
         const newItems = message.data.historyItems || [];
 
         if (currentcursor) {

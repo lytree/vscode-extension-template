@@ -112,7 +112,7 @@ function OptionGroup({
 
     // 2. 开启长按定时器（800ms）
     timers.current[id] = window.setTimeout(() => {
-      console.log(`项目 ${id} 触发长按逻辑`);
+
       // 触发长按操作
       handleLongPressAction(id);
 

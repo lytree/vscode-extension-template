@@ -11,7 +11,7 @@ export const QuestionCount = (props: {
   const [currentIndex, setCurrentIndex] = React.useState<number>(-1);
 
   const onRaioChange = (value: number) => {
-    console.log("onRaioChange ~ value:", value);
+
     setCurrentIndex(value);
   };
 
@@ -20,7 +20,7 @@ export const QuestionCount = (props: {
   };
 
   const onSubmit = () => {
-    console.log("🚀 ~ currentIndex:", currentIndex);
+
     if (currentIndex > -1) {
       onChange && onChange(currentIndex);
       onCancel();

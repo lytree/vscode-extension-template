@@ -23,7 +23,12 @@ export const QuestionItem = (props: TQuestionItemProps) => {
 
         // 从状态中获取选中的答案，如果没有则使用初始值
         const currentAnswer = (() => {
-          // 优先使用用户传入的 userAnswers
+          // 优先使用本地状态
+          if (selectedAnswers[index] !== undefined) {
+            return selectedAnswers[index];
+          }
+          
+          // 其次使用用户传入的 userAnswers
           if (userAnswers && Object.keys(userAnswers).length > 0) {
             // 查找与当前题目匹配的答案
             const matchingAnswer = Object.values(userAnswers).find((answer: any) => 
@@ -33,6 +38,7 @@ export const QuestionItem = (props: TQuestionItemProps) => {
               return matchingAnswer.answer.choice?.toString();
             }
           } 
+          
           // 最后使用 ele.userAnswer
           return ele?.userAnswer?.choice ? ele.userAnswer.choice.toString() : undefined;
         })();

@@ -27,7 +27,7 @@ const AppContent = () => {
 
     const handleMessage = (event: MessageEvent) => {
       const message = event.data;
-      console.log("Received message from extension:", message);
+
       if (message.command === "navigate") {
         navigate(message.data.path);
       }

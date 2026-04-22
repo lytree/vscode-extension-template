@@ -81,7 +81,7 @@ export class TemplatePanel {
     const questionResult = await getQuestion(panelParams.category || "xingce", staticUrl);
     questionResult["userAnswers"] = userAnswers;
     questionResult["exerciseId"] = exerciseResult?.data?.ancientExerciseId?.id;
-    questionResult["combinKey"] = panelParams.category;
+    questionResult["combineKey"] = panelParams.combineKey;
     let panelTitle = params?.name || 'Template Panel';
     const panel = vscode.window.createWebviewPanel('templateWebviewPanel', panelTitle, vscode.ViewColumn.One, {
       enableScripts: true,
@@ -173,15 +173,6 @@ export class TemplatePanel {
             data: this.cachedQuestionData
           });
           this.cachedQuestionData = null;
-        } else {
-          this.postMessage({
-            command: "detailInit",
-            postData: {
-              category: this.pendingParams?.category || "xingce",
-              id: this.pendingParams?.id || 0,
-              type: this.pendingParams?.type || 1
-            }
-          });
         }
       }
       if (command === "answerReady") {
@@ -193,21 +184,12 @@ export class TemplatePanel {
             data: this.cachedQuestionData
           });
           this.cachedQuestionData = null;
-        } else {
-          this.postMessage({
-            command: "answerInit",
-            postData: {
-              category: this.pendingParams?.category || "xingce",
-              id: this.pendingParams?.id || 0,
-              type: this.pendingParams?.type || 1
-            }
-          });
         }
       }
       if (this.isWebviewReady) {
-        if (command === "getQuestion") this.getQuestion(postData);
-        if (command === "getSolution") this.getSolution(postData);
-        if (command === "getQuickQuestion") this.getQuickQuestion(postData);
+        // if (command === "getQuestion") this.getQuestion(postData);
+        // if (command === "getSolution") this.getSolution(postData);
+        // if (command === "getQuickQuestion") this.getQuickQuestion(postData);
         if (command === "submit") this.submit(postData);
         if (command === "jumpFenbi") this.jumpFenbi(postData);
         if (command === "answer") {
@@ -319,6 +301,8 @@ export class TemplatePanel {
   // 处理 submit 请求
   private async submit({ startTime, combineKey, category }: { startTime: number; combineKey: string; category: string }) {
     try {
+      await submit(category, combineKey);
+
       // 获取答案信息
       const solutionResult = await getSolution(category, combineKey);
 
@@ -464,17 +448,17 @@ export class TemplatePanel {
 
       if (!id) return null;
 
-      let postCombinKey = "";
+      let postCombineKey = "";
       const idParams: any = { keypointId: id };
       if (category === "shenlun") {
         idParams.count = 1;
       }
       const idRes = await getExercisesId(category, idParams);
-      postCombinKey = idRes.key;
+      postCombineKey = idRes.key;
 
       const exerciseResult = await getExercisesUrl({
         category,
-        combineKey: postCombinKey,
+        combineKey: postCombineKey,
       });
 
       if (exerciseResult?.code == -1) {
@@ -486,10 +470,10 @@ export class TemplatePanel {
       const userAnswers = exerciseResult?.data?.userAnswers;
       const questionResult = await getQuestion(category, staticUrl);
 
-      const solutionResult = await getSolution(category, postCombinKey);
+      const solutionResult = await getSolution(category, postCombineKey);
       questionResult["userAnswers"] = userAnswers;
       questionResult["exerciseId"] = exerciseResult?.data?.ancientExerciseId?.id;
-      questionResult["combinKey"] = postCombinKey;
+      questionResult["combineKey"] = postCombineKey;
       questionResult["solutions"] = solutionResult.data?.solutions || [];
 
       return questionResult;

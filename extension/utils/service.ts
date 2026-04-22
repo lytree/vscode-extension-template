@@ -126,7 +126,7 @@ export const studyTime = async (params: {
 }) => {
   const url = `https://tiku.fenbi.com/activity/report/studyTime?app=web&kav=121&av=121&hav=121&version=3.0.0.0`;
   const res = await ajax("POST", url, [params]);
-  console.log("🚀 ~ studyTime ~ res:", res);
+
   return res;
 };
 
@@ -222,7 +222,7 @@ export const getCurrent = async () => {
 export const courseSetChange = async (params: { category: string }) => {
   const url = `https://tiku.fenbi.com/activity/userquiz/courseSetChange?courseSetPrefix=${params.category}&app=web&kav=100&av=121&hav=100&version=3.0.0.0`;
   const res = await ajax("PUT", url, {});
-  console.log("🚀 ~ courseSetChange ~ res:", res);
+
   return res;
 };
 
@@ -238,3 +238,4 @@ export const getSubLabels = async (postData: any) => {
   const res = await ajax("GET", url, {});
   return res;
 };
+

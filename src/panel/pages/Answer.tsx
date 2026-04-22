@@ -34,13 +34,13 @@ function Answer() {
   React.useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       const message = event.data;
-      console.log('Answer received message:', message);
+
       setLoading(false);
 
       if (message.command === "answerInit") {
         const { id, name, type } = message.postData;
         // 处理从 Index 页面传递过来的参数
-        console.log("Panel initialized with params:", message.postData);
+
         // 调用 getSolution 函数获取问题信息
         getSolution({ category: "xingce", id, type });
       }
@@ -63,7 +63,7 @@ function Answer() {
       if (message.command === "navigate") {
         // 处理路由跳转
         const { path, state } = message.data;
-        console.log("Navigating to:", path, "with state:", state);
+
         navigate(path, { state });
       }
     };

@@ -70,7 +70,7 @@ export default class WebviewHandle {
 
       if (command === "jumpFenbi") this.jump(postData);
       if (command === "openInBrowser") {
-        console.log("openInBrowser", postData);
+
         vscode.env.openExternal(vscode.Uri.parse(postData.url));
       }
     });
@@ -141,7 +141,7 @@ export default class WebviewHandle {
   }
 
   async changeCategory(postData: any) {
-    console.log("🚀 ~ WebviewHandle ~ changeCategory ~ postData:", postData);
+    
     courseSetChange({ category: postData.categoryId });
   }
 

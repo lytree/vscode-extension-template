@@ -48,7 +48,7 @@ const PastYears = ({ labelId }: { labelId?: string }) => {
       const message = event.data;
       if (message.command === "pastYears:data") {
         // 使用从扩展获取的历年题库数据
-        console.log("pastYears", message);
+
         setPastYears(message.data.list || []);
         setTotalItems(message.data.pageInfo?.totalItem || 0);
         setCurrentPage(message.data.pageInfo?.currentPage || 0);

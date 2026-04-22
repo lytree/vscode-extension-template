@@ -15,7 +15,7 @@ function App() {
     // 处理初始化逻辑
     const initializeApp = async () => {
       try {
-        console.log('Panel app initializing...')
+
 
         // 向扩展发送 Panel 准备就绪的消息
         vscode.postMessage({ command: 'panelReady' })
@@ -23,14 +23,14 @@ function App() {
         // 监听来自扩展的消息
         const handleMessage = (event: MessageEvent) => {
           const message = event.data
-          console.log('Main received message:', message)
+
 
           if (message.command === 'routerInit') {
             // 初始化完成，跳转到详情页
             setIsInitialized(true)
             navigate(message.postData.router)
             // 处理初始化参数
-            console.log('routerInit initialized with params:', message.postData)
+  
           }
         }
 
