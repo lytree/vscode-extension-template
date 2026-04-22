@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { TMaterials, TQuestionItem, TSolutionItem } from "../../types";
+import type { TMaterials, TQuestionItem, TSolutionItem, TUserAnswers, TSelectedAnswers } from "../../types";
 import { radioMap } from "../../view/utils/constant";
 import { setImg } from "../../view/utils/setImg";
 import { OptionGroup } from "@/components/ui/option-group";
@@ -7,33 +7,35 @@ import { OptionGroup } from "@/components/ui/option-group";
 interface TQuestionItemProps {
   data: TSolutionItem[];
   materials: TMaterials[];
+  userAnswers?: TUserAnswers;
   index: number;
-  isMultipleChoice?: boolean;
   onChange: (e: any, item: TSolutionItem, index: number) => void;
 }
 export const QuestionItem = (props: TQuestionItemProps) => {
-  const { data = [], materials = [], onChange, index, isMultipleChoice = false } = props;
+  const { data = [], materials = [], userAnswers, onChange, index } = props;
 
-  const [selectedAnswers, setSelectedAnswers] = React.useState<Record<number, string | string[]>>({});
+  //@ts-ignore
+  const [selectedAnswers, setSelectedAnswers] = React.useState<TSelectedAnswers>({});
 
   return (
     <div>
       {(data || []).map((ele: TSolutionItem, index: number) => {
 
         // 从状态中获取选中的答案，如果没有则使用初始值
-        const currentAnswer = selectedAnswers[index] !== undefined 
-          ? selectedAnswers[index] 
-          : (() => {
-              if (isMultipleChoice) {
-                if (ele?.userAnswer?.choice) {
-                  return Array.isArray(ele.userAnswer.choice)
-                    ? ele.userAnswer.choice.map(c => c.toString())
-                    : [ele.userAnswer.choice.toString()];
-                }
-              } else {
-                return ele?.userAnswer?.choice ? ele.userAnswer.choice.toString() : undefined;
-              }
-            })();
+        const currentAnswer = (() => {
+          // 优先使用用户传入的 userAnswers
+          if (userAnswers && Object.keys(userAnswers).length > 0) {
+            // 查找与当前题目匹配的答案
+            const matchingAnswer = Object.values(userAnswers).find((answer: any) => 
+              answer.id === ele.id
+            );
+            if (matchingAnswer && matchingAnswer.answer) {
+              return matchingAnswer.answer.choice?.toString();
+            }
+          } 
+          // 最后使用 ele.userAnswer
+          return ele?.userAnswer?.choice ? ele.userAnswer.choice.toString() : undefined;
+        })();
 
         return (
           <div>
@@ -65,7 +67,7 @@ export const QuestionItem = (props: TQuestionItemProps) => {
                   return (
                     <div key={ind}>
                       <OptionGroup
-                        type={isMultipleChoice ? "checkbox" : "radio"}
+                        type="radio"
                         value={currentAnswer}
                         onValueChange={(value) => {
                           // 更新本地状态
@@ -74,18 +76,9 @@ export const QuestionItem = (props: TQuestionItemProps) => {
                             [index]: value
                           }));
 
-                          if (isMultipleChoice) {
-                            // 多选：将值转换为数组
-                            const choices = Array.isArray(value)
-                              ? value.map(v => Number(v))
-                              : [Number(value)];
-                            const event = { target: { value: choices } } as any;
-                            onChange(event, ele, index);
-                          } else {
-                            // 单选：将值转换为数字
-                            const event = { target: { value: Number(value) } } as any;
-                            onChange(event, ele, index);
-                          }
+                          // 单选：将值转换为数字
+                          const event = { target: { value: Number(value) } } as any;
+                          onChange(event, ele, index);
                         }}
                         options={options}
                         className="space-y-3"
@@ -110,21 +103,11 @@ export const QuestionItem = (props: TQuestionItemProps) => {
                       }}
                     >
                       你的答案：
-                      {isMultipleChoice
-                        ? Array.isArray(ele?.userAnswer?.choice)
-                          ? ele.userAnswer.choice.map(c => radioMap[Number(c) + 1]).join(', ')
-                          : radioMap[Number(ele?.userAnswer?.choice) + 1]
-                        : radioMap[Number(ele?.userAnswer?.choice) + 1]
-                      }
+                      {radioMap[Number(ele?.userAnswer?.choice) + 1]}
                     </span>
                     <span className="green">
                       正确答案：
-                      {isMultipleChoice
-                        ? Array.isArray(ele?.correctAnswer?.choice)
-                          ? ele.correctAnswer.choice.map(c => radioMap[Number(c) + 1]).join(', ')
-                          : radioMap[Number(ele?.correctAnswer?.choice) + 1]
-                        : radioMap[Number(ele?.correctAnswer?.choice) + 1]
-                      }
+                      {radioMap[Number(ele?.correctAnswer?.choice) + 1]}
                     </span>
                   </p>
                   <div className="green" style={{ fontWeight: "bold", marginTop: "8px" }}>

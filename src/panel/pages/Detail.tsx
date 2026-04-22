@@ -156,11 +156,9 @@ function Detail() {
     });
   };
 
-  const questions = groupByMaterialIndexesTo2DArray(
-    questionData?.questions || []
-  );
+  const questions = groupByMaterialIndexesTo2DArray(questionData?.questions || []);
 
-
+  console.log("questions", JSON.stringify(questionData));
   if (loading) {
     return (
       <div className="h-full bg-card p-4 flex items-center justify-center">
@@ -222,6 +220,7 @@ function Detail() {
                 data={item}
                 index={index}
                 materials={questionData?.materials || []}
+                userAnswers={questionData?.userAnswers}
               />
             </div>
           );

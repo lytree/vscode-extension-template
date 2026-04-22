@@ -35,6 +35,7 @@ export type TQuestionData = {
   exerciseId: number;
   questions: TQuestionItem[];
   materials: TMaterials[];
+  userAnswers: TUserAnswers;
 };
 
 export type TSolutionData = TQuestionData & {
@@ -126,3 +127,25 @@ export interface TTheme {
 export interface TRadioMap {
   [key: string]: string;
 }
+
+// 用户答案项
+export interface TUserAnswerItem {
+  key: string;
+  id: number;
+  prefix: string;
+  time: number;
+  answer: {
+    choice: string;
+    type: number;
+  };
+}
+
+// 用户答案集合
+export type TUserAnswers = {
+  [key: string]: TUserAnswerItem | {};
+};
+
+// 选中答案集合（用于组件内部状态）
+export type TSelectedAnswers = {
+  [index: number]: string;
+};
