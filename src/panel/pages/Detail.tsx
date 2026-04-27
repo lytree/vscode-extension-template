@@ -1,7 +1,6 @@
 import * as React from "react";
 import type { TSolutionData, TQuestionData, TQuestionItem, TLastAnswerRecord } from "../../types";
 import { QuestionItem } from "../components/question-item";
-import { ShenlunItem } from "../components/shenlun-item";
 import { CanvasDrawing } from "../components/canvas-drawing";
 import { getVscodeApi } from "../../view/utils/vscodeApi";
 import { Button } from "../../components/ui/button";
@@ -178,30 +177,22 @@ function Detail() {
         </div>
       </div>
       <div className="question-container overflow-y-auto max-h-[calc(100%-120px)]">
-        {(questions || []).map((item: any, index: number) => {
-          if (false) {
+        {(questions || []).map((group: any[], groupIndex: number) => {
+          return (group || []).map((item: any, itemIndex: number) => {
+            const questionIndex = questionData?.questions?.findIndex((q: any) => q.id === item.id) ?? itemIndex;
             return (
-              <div key={`${page}-${index}`} className="question-item mb-6">
-                <ShenlunItem
-                  onChange={onShenlunChange}
+              <div key={`${groupIndex}-${itemIndex}`} className="question-item mb-6">
+                <QuestionItem
+                  onChange={onRaioChange}
                   data={item}
-                  index={index}
+                  questionIndex={questionIndex}
                   materials={questionData?.materials || []}
+                  materialIndex={item.materialIndexes?.[0] || 0}
+                  userAnswer={(questionData?.userAnswers || {})[item.globalId]}
                 />
               </div>
             );
-          }
-          return (
-            <div key={`${page}-${index}`} className="question-item mb-6">
-              <QuestionItem
-                onChange={onRaioChange}
-                data={item}
-                index={index}
-                materials={questionData?.materials || []}
-                userAnswers={questionData?.userAnswers}
-              />
-            </div>
-          );
+          });
         })}
       </div>
 

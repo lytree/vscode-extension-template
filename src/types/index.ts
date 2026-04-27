@@ -35,7 +35,7 @@ export type TQuestionData = {
   exerciseId: number;
   questions: TQuestionItem[];
   materials: TMaterials[];
-  userAnswers: TUserAnswers;
+  userAnswers: TUserAnswers | {};
 };
 
 export type TSolutionData = TQuestionData & {

@@ -9,14 +9,17 @@ import {
   getExercisesId,
   getExercisesUrl,
   getHistory,
+  getMeta,
   getQuestion,
   getQuickExercisesId,
+  getReport,
   getSolution,
   getSolutionQuestion,
   incr,
   studyTime,
   submit,
 } from "../utils/service.js";
+import { buildMaterialsForQuestions } from '../utils/func.js';
 
 export class TemplatePanel {
 
@@ -104,7 +107,7 @@ export class TemplatePanel {
       );
       return;
     }
-    const exerciseResult = await TemplatePanel.fetchQuestionData(params, fenbiChannel);
+    const exerciseResult = await TemplatePanel.fetchSolutionData(params, fenbiChannel);
     let panelTitle = params?.name || 'Template Panel';
     const panel = vscode.window.createWebviewPanel('templateWebviewPanel', panelTitle, vscode.ViewColumn.One, {
       enableScripts: true,
@@ -180,7 +183,7 @@ export class TemplatePanel {
         if (this.cachedQuestionData) {
           this.fenbiChannel.appendLine(`Sending cached question data to panel`);
           this.panel.webview.postMessage({
-            command: "getQuestion",
+            command: "getSolution",
             data: this.cachedQuestionData
           });
           this.cachedQuestionData = null;
@@ -482,5 +485,44 @@ export class TemplatePanel {
       return null;
     }
   }
+  private static async fetchSolutionData(params: any, fenbiChannel: vscode.OutputChannel): Promise<any> {
+    try {
+      let res: any = {}
+      let postCombineKey = params.combineKey;
+      const category = params?.category || "xingce";
 
+      const exerciseResult = await getSolution(
+        category,
+        postCombineKey,
+      );
+      const reportResult = await getReport(
+        category,
+        postCombineKey,
+      );
+      if (exerciseResult?.code == -1) {
+        return null;
+      }
+
+      const staticUrl = exerciseResult?.data?.staticUrl?.urls?.[0];
+      const requestKey = exerciseResult?.data?.switchVO?.requestKey;
+      // const questionResult = await getQuestion(category, staticUrl);
+      fenbiChannel.appendLine("getSolution :staticUrl:" + JSON.stringify(exerciseResult));
+      // 获取答案信息
+      const solutionResult = await getSolutionQuestion(staticUrl, category);
+      const metaResult = await getMeta(requestKey, category);
+      res["solutions"] = solutionResult.solutions || [];
+      res["materials"] = buildMaterialsForQuestions(solutionResult?.card, solutionResult?.materials);
+      res["userAnswers"] = exerciseResult?.data?.userAnswers;
+      res["report"] = reportResult.data || {};
+      res["requestKey"] = requestKey;
+      res["meta"] = metaResult.data || {};
+      res["exerciseId"] = exerciseResult?.data?.ancientExerciseId?.id;
+      res["combinKey"] = postCombineKey;
+      fenbiChannel.appendLine("getSolution :solution:" + JSON.stringify(res));
+      return res;
+    } catch (error) {
+      fenbiChannel.appendLine("getSolution :solution:" + JSON.stringify(error));
+      return null;
+    }
+  }
 }

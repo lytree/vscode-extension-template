@@ -101,13 +101,21 @@ export const getSolution = async (category = "xingce", combineKey: string) => {
   const res = await ajax("GET", url);
   return res;
 };
-
+export const getReport = async (category = "xingce", combineKey: string) => {
+  const url = `https://tiku.fenbi.com/combine/exercise/getReport?format=html&key=${combineKey}&routecs=${category}&kav=121&av=121&hav=121&app=web`;
+  const res = await ajax("GET", url);
+  return res;
+};
 export const getSolutionQuestion = async (url: string, category = "xingce") => {
   const _url = `${url}&routecs=${category}&type=1&kav=121&av=121&hav=121&app=web`;
   const res = await ajax("GET", _url);
   return res;
 };
-
+export const getMeta = async (requestKey: string, category = "xingce") => {
+  const _url = `https://tiku.fenbi.com/combine/question/getMeta?requestKey=${requestKey}&routecs=${category}&kav=125&av=127&hav=125&app=web`;
+  const res = await ajax("GET", _url);
+  return res;
+};
 export const getCache = async (catrgory: string = "xingce") => {
   const url = `https://tiku.fenbi.com/api/${catrgory}/category-exercises-unfinished?noCacheTag=${Math.round(
     1e3 * Math.random(),

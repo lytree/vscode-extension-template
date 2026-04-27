@@ -1,10 +1,9 @@
 import * as React from "react";
 import type { TSolutionData, TQuestionData, TLastAnswerRecord } from "../../types";
 import { QuestionItem } from "../components/question-item";
-import { ShenlunItem } from "../components/shenlun-item";
 import { getVscodeApi } from "../../view/utils/vscodeApi";
 import { Button } from "../../components/ui/button";
-import { Card, CardHeader, CardTitle, CardAction, CardContent } from "../../components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
 import { groupByMaterialIndexesTo2DArray } from "../../view/utils/analyze";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -47,10 +46,9 @@ function Answer() {
       setLoading(false);
 
 
-      if (message.command === "solution") {
-        const { id, name, type } = message.postData;
-        getSolution({ category: "xingce", id, type });
+      if (message.command === "getSolution") {
         setSolutionData(message.data);
+        console.log("Received solution data:", message.data);
       }
 
       if (message.command === "message") {
@@ -58,13 +56,6 @@ function Answer() {
         console.error("Error message:", message.data.message);
         alert(message.data.message);
       }
-
-      // if (message.command === "navigate") {
-      //   // 处理路由跳转
-      //   const { path, state } = message.data;
-
-      //   navigate(path, { state });
-      // }
     };
 
     window.addEventListener("message", handleMessage);
@@ -74,55 +65,18 @@ function Answer() {
     return () => window.removeEventListener("message", handleMessage);
   }, [navigate]);
 
-  const getSolution = ({
-    category,
-    id,
-    combineKey,
-    type = 1,
-  }: {
-    category?: string;
-    id?: number;
-    combineKey?: string | null;
-    type?: number;
-  }) => {
-    setLoading(true);
-    vscode.postMessage({
-      command: "getSolution",
-      postData: { type, category, id, combineKey },
-    });
-  };
-
   const onBack = () => {
     // 关闭 Panel
     vscode.postMessage({ command: "closePanel" });
   };
-
-  const onShenlunChange = (text: string) => {
-    vscode.postMessage({
-      command: "answer",
-      inc: true,
-      postData: {
-        startTime: startTime,
-        combineKey: combineKey,
-        category: "xingce",
-        answer: text,
-      },
-    });
-  };
-
   const onJump = () => {
     vscode.postMessage({
       command: "jumpFenbi",
       postData: {
         category: "xingce",
-        exerciseId: questionData?.exerciseId,
+        exerciseId: solutionData?.exerciseId,
       },
     });
-  };
-
-  const onSetting = () => {
-    // 打开设置
-    vscode.postMessage({ command: "openSetting" });
   };
 
   const onDownload = () => {
@@ -134,19 +88,12 @@ function Answer() {
   const solutions = groupByMaterialIndexesTo2DArray(
     solutionData?.solutions || []
   );
-
   return (
     <div className="h-full bg-card flex flex-col">
       {/* 顶部标题栏 */}
       <div className="top-bar flex justify-between items-center p-4 border-b border-border">
         <h1 className="text-lg font-medium"></h1>
         <div className="flex gap-2">
-          <Button
-            onClick={onSetting}
-            className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
-          >
-            设置
-          </Button>
           <Button variant="secondary"
             onClick={onDownload}
             className="text-secondary-foreground hover:bg-secondary/80"
@@ -158,79 +105,31 @@ function Answer() {
 
       {/* 题目容器 */}
       <div className="question-container flex-1 overflow-y-auto p-4">
-        {(solutions || []).map((item: any, index: number) => {
-          if (false) {
+        {(solutions || []).map((group: any[], groupIndex: number) => {
+          return (group || []).map((item: any, itemIndex: number) => {
+            const questionIndex = solutionData?.solutions?.findIndex((q: any) => q.id === item.id) ?? itemIndex;
             return (
-              <Card key={`${page}-${index}`} className="mb-6 rounded-lg shadow-sm">
+              <Card key={`${groupIndex}-${itemIndex}`} className="mb-6 rounded-lg shadow-sm">
                 <CardHeader className="flex justify-between items-start gap-4 pb-2">
                   <CardTitle className="flex items-center gap-2">
-                    <span className="text-primary font-medium">{index + 1}.</span>
+                    <span className="text-primary font-medium">{questionIndex + 1}.</span>
                     <span className="text-sm text-muted-foreground">单选题</span>
                   </CardTitle>
-                  <CardAction className="flex gap-2">
-                    <Button
-                      size="sm"
-                      className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                    >
-                      标记
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                    >
-                      ★
-                    </Button>
-                  </CardAction>
                 </CardHeader>
                 <CardContent>
-                  <ShenlunItem
-                    onChange={onShenlunChange}
+                  <QuestionItem
+                    onChange={() => { }}
                     data={item}
-                    index={index}
-                    materials={questionData?.materials || []}
+                    questionIndex={questionIndex}
+                    materials={solutionData?.materials || []}
+                    materialIndex={item.materialIndexes?.[0] || 0}
+                    userAnswer={(solutionData?.userAnswers || {})[item.globalId]}
+                    disabled={true}
                   />
                 </CardContent>
               </Card>
             );
-          }
-          return (
-            <Card key={`${page}-${index}`} className="mb-6 rounded-lg shadow-sm">
-              <CardHeader className="flex justify-between items-start gap-4 pb-2">
-                <CardTitle className="flex items-center gap-2">
-                  <span className="text-primary font-medium">{index + 1}.</span>
-                  <span className="text-sm text-muted-foreground">单选题</span>
-                </CardTitle>
-                <CardAction className="flex gap-2">
-                  <Button
-                    size="sm"
-                    className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                  >
-                    标
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                  >
-                    记
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                  >
-                    ★
-                  </Button>
-                </CardAction>
-              </CardHeader>
-              <CardContent>
-                <QuestionItem
-                  onChange={() => { }}
-                  data={item}
-                  index={index}
-                  materials={questionData?.materials || []}
-                />
-              </CardContent>
-            </Card>
-          );
+          });
         })}
       </div>
 
