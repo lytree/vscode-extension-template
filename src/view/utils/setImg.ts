@@ -13,6 +13,6 @@ export const setImg = (str: string) => {
   _str = _str.replace(/\swidth\s*=\s*(['"])[^'"]*\1/gi, "");
 
   _str = _str.replace(/\sheight\s*=\s*(['"])[^'"]*\1/gi, "");
-
+  console.log(_str);  
   return _str;
 };

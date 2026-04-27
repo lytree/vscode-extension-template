@@ -19,7 +19,6 @@ import {
   studyTime,
   submit,
 } from "../utils/service.js";
-import { buildMaterialsForQuestions } from '../utils/func.js';
 
 export class TemplatePanel {
 
@@ -511,7 +510,8 @@ export class TemplatePanel {
       const solutionResult = await getSolutionQuestion(staticUrl, category);
       const metaResult = await getMeta(requestKey, category);
       res["solutions"] = solutionResult.solutions || [];
-      res["materials"] = buildMaterialsForQuestions(solutionResult?.card, solutionResult?.materials);
+      res["card"] = solutionResult.card || [];
+      res["materials"] = solutionResult.materials || [];
       res["userAnswers"] = exerciseResult?.data?.userAnswers;
       res["report"] = reportResult.data || {};
       res["requestKey"] = requestKey;

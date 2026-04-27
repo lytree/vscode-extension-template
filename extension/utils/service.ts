@@ -1,4 +1,3 @@
-import { buildMaterialsForQuestions } from "./func.js";
 import ajax from "./request.js";
 
 export const getExercisesId = async (
@@ -77,7 +76,6 @@ export const getQuestion = async (
 ) => {
   const _url = `${url}&routecs=${category}&type=1&kav=121&av=121&hav=121&app=web`;
   const res = await ajax("GET", _url);
-  res["materials"] = buildMaterialsForQuestions(res?.card, res?.materials);
   return res;
 };
 
