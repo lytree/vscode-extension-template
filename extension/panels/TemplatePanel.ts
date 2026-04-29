@@ -1,9 +1,14 @@
 import * as vscode from 'vscode';
 import { renderWebviewHtml } from '../webview/renderWebviewHtml.js';
 export class TemplatePanel {
+  private static instance: TemplatePanel | null = null;
+
+
+
   public static currentPanel: TemplatePanel | undefined;
-  private fenbiChannel: vscode.OutputChannel;
-  public static createOrShow(extensionUri: vscode.Uri, fenbiChannel: vscode.OutputChannel) {
+
+  private channel: vscode.OutputChannel;
+  public static createOrShow(extensionUri: vscode.Uri, channel: vscode.OutputChannel) {
     const column = vscode.window.activeTextEditor?.viewColumn ?? vscode.ViewColumn.One;
 
     if (TemplatePanel.currentPanel) {
@@ -17,12 +22,12 @@ export class TemplatePanel {
       localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')]
     });
 
-    TemplatePanel.currentPanel = new TemplatePanel(panel, extensionUri, fenbiChannel);
+    TemplatePanel.currentPanel = new TemplatePanel(panel, extensionUri, channel);
   }
 
-  private constructor(private readonly panel: vscode.WebviewPanel, extensionUri: vscode.Uri, fenbiChannel: vscode.OutputChannel) {
-    this.panel.webview.html = renderWebviewHtml(this.panel.webview, extensionUri, 'panel', fenbiChannel);
-    this.fenbiChannel = fenbiChannel;
+  private constructor(private readonly panel: vscode.WebviewPanel, extensionUri: vscode.Uri, channel: vscode.OutputChannel) {
+    this.panel.webview.html = renderWebviewHtml(this.panel.webview, extensionUri, 'panel', channel);
+    this.channel = channel;
     this.panel.onDidDispose(() => {
       TemplatePanel.currentPanel = undefined;
     });
