@@ -40,4 +40,5 @@ vite.config.ts
 - `pnpm run compile` / `pnpm run build`
 - `pnpm run watch` / `pnpm run dev`
 - `pnpm run check`
-- `pnpm run package`
+- `pnpm run package`（生成 .vsix）
+- `pnpm run package:vsix:dev`（生成 pre-release .vsix）

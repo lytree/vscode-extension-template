@@ -6,7 +6,7 @@
   "publisher": "your-publisher",
   "packageManager": "pnpm@10.13.1",
   "engines": {
-    "vscode": "^1.95.0",
+    "vscode": "^1.115.0",
     "node": ">=22.0.0"
   },
   "type": "module",
@@ -131,7 +131,9 @@
     "check": "pnpm run lint && pnpm run typecheck",
     "pretest": "pnpm run compile && pnpm run lint",
     "test": "node ./out/test/runTest.js",
-    "package": "pnpm run compile"
+    "package": "pnpm run package:vsix",
+    "package:vsix": "pnpm run compile && pnpm dlx @vscode/vsce package --no-dependencies",
+    "package:vsix:dev": "pnpm run compile && pnpm dlx @vscode/vsce package --pre-release --no-dependencies"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
