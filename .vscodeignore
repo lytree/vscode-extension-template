@@ -3,8 +3,6 @@
 extension/**
 .agents/**
 src/**
-1.json
-2.json
 .gitignore
 .eslintrc.cjs
 tsconfig.json
