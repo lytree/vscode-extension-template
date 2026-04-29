@@ -15,7 +15,7 @@ const ENTRY_KEY: Record<PageType, string> = {
 };
 
 export function renderWebviewHtml(webview: vscode.Webview, extensionUri: vscode.Uri, page: PageType, fenbiChannel: vscode.OutputChannel, manifestName: string = 'manifest.json'): string {
-
+  fenbiChannel.appendLine(`Rendering HTML ${extensionUri} for ${page} using manifest: ${manifestName}`);
   const nonce = getNonce();
   const manifest = loadManifest(extensionUri, manifestName);
   const entry = manifest[ENTRY_KEY[page]] as ManifestItem | undefined;
@@ -27,7 +27,7 @@ export function renderWebviewHtml(webview: vscode.Webview, extensionUri: vscode.
   const cssFiles = collectCssFiles(manifest, entry);
   const styleUris = cssFiles.map(cssFile => webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', cssFile)));
 
-
+  fenbiChannel.appendLine(`Found CSS files for ${page}: ${styleUris.join(', ')}`);
 
   // 加载字体文件
   const fontFiles = ['geist-cyrillic-wght-normal.woff2', 'geist-latin-ext-wght-normal.woff2', 'geist-latin-wght-normal.woff2'];
