@@ -2,16 +2,17 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run Extension (Watch)",
+      "name": "Run Extension (Fixed VSCode)",
       "type": "extensionHost",
       "request": "launch",
       "args": [
-        "--extensionDevelopmentPath=${workspaceFolder}"
+        "--extensionDevelopmentPath=${workspaceFolder}",
       ],
       "outFiles": [
         "${workspaceFolder}/out/**/*.js"
       ],
-      // "preLaunchTask": "pnpm: watch"
+      // "preLaunchTask": "pnpm: watch",
+      // "postDebugTask": "kill pnpm: watch"
     },
     {
       "name": "Run Extension (Compile Once)",

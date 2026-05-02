@@ -1,10 +1,8 @@
 import * as React from "react";
-import type { TSolutionData, TUserAnswerItem } from "../../types";
+import type { TSolutionData, TUserAnswerItem, TSolutionItem, TMaterials } from "../../types";
 import { QuestionItem } from "../components/question-item";
 import { getVscodeApi } from "../../view/utils/vscodeApi";
 import { Button } from "../../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
 import { useLocation } from "react-router-dom";
 import { setImg } from "@/view/utils/setImg";
 
@@ -25,6 +23,9 @@ function Answer() {
   const location = useLocation();
   const [loading, setLoading] = React.useState(true);
   const [solutionData, setSolutionData] = React.useState<TSolutionData | null>(null);
+  const [activeTabMap, setActiveTabMap] = React.useState<Record<string, string>>({});
+  const scrollContainerRefs = React.useRef<Map<number, HTMLDivElement>>(new Map());
+  const isScrollingToTab = React.useRef(false);
 
   React.useEffect(() => {
     if (location.state?.solutionData) {
@@ -100,7 +101,7 @@ function Answer() {
   }, [solutionData]);
 
   const solutionMap = React.useMemo(() => {
-    const map = new Map<string, any>();
+    const map = new Map<string, TSolutionItem>();
     (solutionData?.solutions || []).forEach((solution) => {
       map.set(solution.globalId, solution);
     });
@@ -128,89 +129,174 @@ function Answer() {
         const questionIndex = questionIndexMap.get(card.key) ?? 0;
         return { card, solution, questionIndex };
       })
-      .filter((item): item is { card: CardNode; solution: any; questionIndex: number } => item !== null);
+      .filter((item): item is { card: CardNode; solution: TSolutionItem; questionIndex: number } => item !== null);
+
+  const getActiveTab = (groupKey: string, cards: { card: CardNode }[]) => {
+    if (activeTabMap[groupKey]) return activeTabMap[groupKey];
+    return cards[0]?.card.key ?? "";
+  };
+
+  const isCorrect = (solution: TSolutionItem, userAnswer?: TUserAnswerItem) => {
+    const userChoice = userAnswer?.answer?.choice ?? solution?.userAnswer?.choice;
+    return userChoice === solution?.correctAnswer?.choice;
+  };
+
+  const findGroupIndexByCardKey = (cardKey: string): number => {
+    return groups.findIndex((group) => group.cards.some((card) => card.key === cardKey));
+  };
+
+  const handleScrollUpdate = (groupIndex: number) => {
+    if (isScrollingToTab.current) return;
+    const container = scrollContainerRefs.current.get(groupIndex);
+    if (!container) return;
+
+    const panels = container.querySelectorAll<HTMLElement>("[data-question-id]");
+    if (panels.length === 0) return;
+
+    const containerRect = container.getBoundingClientRect();
+    let topPanel: HTMLElement | null = null;
+    let minDist = Infinity;
+
+    panels.forEach((panel) => {
+      const rect = panel.getBoundingClientRect();
+      const dist = Math.abs(rect.top - containerRect.top);
+      if (dist < minDist) {
+        minDist = dist;
+        topPanel = panel;
+      }
+    });
+
+    if (topPanel) {
+      const cardKey = topPanel.getAttribute("data-question-id");
+      if (cardKey) {
+        setActiveTabMap((prev) => {
+          if (prev[`group-${groupIndex}`] === cardKey) return prev;
+          return { ...prev, [`group-${groupIndex}`]: cardKey };
+        });
+      }
+    }
+  };
+
+  const handleTabClick = (groupIndex: number, cardKey: string) => {
+    setActiveTabMap((prev) => ({ ...prev, [`group-${groupIndex}`]: cardKey }));
+    const container = scrollContainerRefs.current.get(groupIndex);
+    if (!container) return;
+
+    const panel = container.querySelector(`[data-question-id="${cardKey}"]`);
+    if (panel) {
+      isScrollingToTab.current = true;
+      panel.scrollIntoView({ behavior: "smooth", block: "start" });
+      setTimeout(() => {
+        isScrollingToTab.current = false;
+      }, 500);
+    }
+  };
+
+  const scrollToQuestion = (cardKey: string) => {
+    if (!hasSharedMaterial) {
+      const el = document.getElementById(`answer-q-${cardKey}`);
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    } else {
+      const groupIndex = findGroupIndexByCardKey(cardKey);
+      if (groupIndex >= 0) {
+        handleTabClick(groupIndex, cardKey);
+      }
+    }
+  };
 
   if (loading) {
     return <div className="h-full bg-card p-4 flex items-center justify-center">加载中...</div>;
   }
 
-  const renderFooter = (
-    <div className="bottom-bar border-t border-border p-4 bg-card">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <Button onClick={onBack}>返回上一页</Button>
-          <Button onClick={onJump}>跳转粉笔网址</Button>
+  const renderAnswerCard = () => {
+    const total = solutionData?.questionCount || 0;
+    const correct = solutionData?.correctCount || 0;
+    const solutions = solutionData?.solutions || [];
+
+    return (
+      <div className="answer-card-bar">
+        <div className="answer-card-info">
+          <span className="answer-card-label">答题卡</span>
+          <span className="answer-card-count">
+            {correct}/{total}
+          </span>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="text-sm">
-            答题卡
-            <span className="text-muted-foreground ml-2">
-              {solutionData?.correctCount || 0}/{solutionData?.questionCount || 0}
-            </span>
-          </div>
-          <div className="flex gap-1">
-            {Array.from({ length: solutionData?.questionCount || 0 }, (_, i) => (
-              <Button key={i} size="sm" className="w-6 h-6 p-0 flex items-center justify-center">
+        <div className="answer-card-grid">
+          {solutions.map((solution, i) => {
+            const userAnswer = getUserAnswerByKey(solution.globalId);
+            const correctFlag = isCorrect(solution, userAnswer);
+            return (
+              <div
+                key={i}
+                className={`answer-card-dot ${correctFlag ? "correct" : "wrong"}`}
+                onClick={() => scrollToQuestion(solution.globalId)}
+              >
                 {i + 1}
-              </Button>
-            ))}
-          </div>
+              </div>
+            );
+          })}
         </div>
+      </div>
+    );
+  };
+
+  const renderFooter = (
+    <div className="solution-bottom-bar">
+      <div className="solution-bottom-left">
+        <Button variant="ghost" size="sm" onClick={onBack} className="solution-bottom-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 22 22" className="mr-1">
+            <path d="M7.761 5.627a.7.7 0 0 1 .99.99l-3.534 3.534h13.68a.697.697 0 0 1 .7.7.7.7 0 0 1-.7.7H5.216l3.534 3.534a.7.7 0 1 1-.99.99l-4.558-4.558q-.18-.18-.223-.429-.02-.12-.006-.237-.015-.116.006-.237.043-.249.223-.429z" fillRule="evenodd" fill="currentColor" />
+          </svg>
+          返回
+        </Button>
+        <Button variant="ghost" size="sm" onClick={onJump} className="solution-bottom-btn">
+          跳转粉笔
+        </Button>
+      </div>
+      {renderAnswerCard()}
+      <div className="solution-bottom-right">
+        <Button variant="ghost" size="sm" onClick={onDownload} className="solution-bottom-btn">
+          下载
+        </Button>
       </div>
     </div>
   );
 
   if (!hasSharedMaterial) {
     return (
-      <div className="h-full bg-card flex flex-col">
-        <div className="top-bar flex justify-between items-center p-4 border-b border-border">
-          <h1 className="text-lg font-medium"></h1>
-          <Button variant="secondary" onClick={onDownload}>
-            下载
-          </Button>
+      <div className="solution-page">
+        <div className="solution-main">
+          <div className="questions-single-list">
+            {groups.flatMap((group, groupIndex) =>
+              getRenderableCards(group.cards).map(({ card, solution, questionIndex }, cardIndex) => {
+                const userAnswer = getUserAnswerByKey(card.key);
+                const correctFlag = isCorrect(solution, userAnswer);
+                return (
+                  <div key={`${groupIndex}-${cardIndex}`} id={`answer-q-${card.key}`} className="questions-single-container">
+                    <QuestionItem
+                      onChange={() => {}}
+                      data={solution}
+                      questionIndex={questionIndex}
+                      materials={solutionData?.materials || []}
+                      materialIndex={0}
+                      userAnswer={userAnswer}
+                      disabled={true}
+                      isCorrect={correctFlag}
+                    />
+                  </div>
+                );
+              }),
+            )}
+          </div>
         </div>
-
-        <div className="question-container flex-1 overflow-y-auto p-4">
-          {groups.flatMap((group, groupIndex) =>
-            getRenderableCards(group.cards).map(({ card, solution, questionIndex }, cardIndex) => (
-              <Card key={`${groupIndex}-${cardIndex}`} className="mb-6 rounded-lg shadow-sm">
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center gap-2">
-                    <span className="text-primary font-medium">{questionIndex + 1}.</span>
-                    <span className="text-sm text-muted-foreground">单选题</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <QuestionItem
-                    onChange={() => {}}
-                    data={solution}
-                    questionIndex={questionIndex}
-                    materials={solutionData?.materials || []}
-                    materialIndex={0}
-                    userAnswer={getUserAnswerByKey(card.key)}
-                    disabled={true}
-                  />
-                </CardContent>
-              </Card>
-            )),
-          )}
-        </div>
-
         {renderFooter}
       </div>
     );
   }
 
   return (
-    <div className="h-full bg-card flex flex-col">
-      <div className="top-bar flex justify-between items-center p-4 border-b border-border">
-        <h1 className="text-lg font-medium"></h1>
-        <Button variant="secondary" onClick={onDownload}>
-          下载
-        </Button>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-4">
+    <div className="solution-page">
+      <div className="solution-main">
         {groups.map((group, groupIndex) => {
           const material = materialMap.get(group.materialKey);
           const renderableCards = getRenderableCards(group.cards);
@@ -219,51 +305,84 @@ function Answer() {
             return null;
           }
 
+          const activeKey = getActiveTab(`group-${groupIndex}`, renderableCards);
+
           return (
-            <Card key={groupIndex} className="mb-6 rounded-lg shadow-sm overflow-hidden">
-              <div className="flex h-[500px]">
-                <div className="w-1/2 border-r border-border overflow-y-auto p-4">
-                  <div
-                    dangerouslySetInnerHTML={{ __html: setImg(material.content) }}
-                    className="prose prose-sm max-w-none"
-                  />
-                </div>
-
-                <div className="flex-1 flex flex-col overflow-hidden">
-                  <Tabs defaultValue={renderableCards[0].card.key} className="flex-1 flex flex-col h-full">
-                    <div className="border-b border-border px-4 flex-shrink-0">
-                      <TabsList className="h-10 w-full grid grid-cols-5">
-                        {renderableCards.map(({ card, questionIndex }) => (
-                          <TabsTrigger key={card.key} value={card.key} className="text-xs">
-                            {questionIndex + 1}
-                          </TabsTrigger>
-                        ))}
-                      </TabsList>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto">
-                      {renderableCards.map(({ card, solution, questionIndex }) => (
-                        <TabsContent key={card.key} value={card.key} className="p-4 h-full">
-                          <QuestionItem
-                            onChange={() => {}}
-                            data={solution}
-                            questionIndex={questionIndex}
-                            materials={solutionData?.materials || []}
-                            materialIndex={0}
-                            userAnswer={getUserAnswerByKey(card.key)}
-                            disabled={true}
-                          />
-                        </TabsContent>
-                      ))}
-                    </div>
-                  </Tabs>
+            <div key={groupIndex} className="resizable-container">
+              <div className="resizable-left">
+                <div className="materials-container">
+                  <div className="material-body">
+                    <span className="material-label-tab">材料</span>
+                    <div
+                      className="material-content"
+                      dangerouslySetInnerHTML={{ __html: setImg(material.content) }}
+                    />
+                  </div>
                 </div>
               </div>
-            </Card>
+
+              <div className="resizable-divider">
+                <div className="resizable-divider-handle">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="4" height="32" viewBox="0 0 4 32">
+                    <circle cx="2" cy="8" r="1.5" fill="currentColor" opacity="0.3" />
+                    <circle cx="2" cy="16" r="1.5" fill="currentColor" opacity="0.3" />
+                    <circle cx="2" cy="24" r="1.5" fill="currentColor" opacity="0.3" />
+                  </svg>
+                </div>
+              </div>
+
+              <div className="resizable-right">
+                <div className="questions-anchors">
+                  {renderableCards.map(({ card, questionIndex }) => (
+                    <button
+                      key={card.key}
+                      className={`questions-anchor-tab ${card.key === activeKey ? "active" : ""}`}
+                      onClick={() => handleTabClick(groupIndex, card.key)}
+                    >
+                      {questionIndex + 1}题
+                    </button>
+                  ))}
+                </div>
+
+                <div
+                  className="questions-container"
+                  ref={(el) => {
+                    if (el) {
+                      scrollContainerRefs.current.set(groupIndex, el);
+                    } else {
+                      scrollContainerRefs.current.delete(groupIndex);
+                    }
+                  }}
+                  onScroll={() => handleScrollUpdate(groupIndex)}
+                >
+                  {renderableCards.map(({ card, solution, questionIndex }) => {
+                    const userAnswer = getUserAnswerByKey(card.key);
+                    const correctFlag = isCorrect(solution, userAnswer);
+                    return (
+                      <div
+                        key={card.key}
+                        data-question-id={card.key}
+                        className="question-panel"
+                      >
+                        <QuestionItem
+                          onChange={() => {}}
+                          data={solution}
+                          questionIndex={questionIndex}
+                          materials={solutionData?.materials || []}
+                          materialIndex={0}
+                          userAnswer={userAnswer}
+                          disabled={true}
+                          isCorrect={correctFlag}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
           );
         })}
       </div>
-
       {renderFooter}
     </div>
   );

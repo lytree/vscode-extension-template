@@ -20,20 +20,9 @@ interface OptionGroupProps {
   showExclude?: boolean
   onExcludeChange?: (excludedMap: Record<string, boolean>) => void
   initialExcludedMap?: Record<string, boolean>
+  correctAnswer?: string
+  showResult?: boolean
 }
-
-/**
- * OptionGroup 组件使用说明：
- * 1. 持久状态管理：通过 value 和 onValueChange 实现持久状态
- *    - 父组件需要存储选中值并通过 value 传入
- *    - 当用户选择选项时，onValueChange 会被调用，父组件需要更新存储的选中值
- * 2. 单选模式 (type="radio")：
- *    - value 为字符串类型，对应选中选项的 value
- *    - 只允许一个选项被选中
- * 3. 多选模式 (type="checkbox")：
- *    - value 为字符串数组类型，包含所有选中选项的 value
- *    - 允许多个选项被选中
- */
 
 function OptionGroup({
   type,
@@ -44,12 +33,12 @@ function OptionGroup({
   optionClassName,
   showExclude = false,
   onExcludeChange,
-  initialExcludedMap = {}
+  initialExcludedMap = {},
+  correctAnswer,
+  showResult = false
 }: OptionGroupProps) {
   const [excludedMap, setExcludedMap] = React.useState<Record<string, boolean>>(initialExcludedMap);
 
-  // 使用 useRef 存储定时器字典，避免触发不必要的渲染
-  // 在 Webview/浏览器环境下，使用 window.setTimeout 的返回类型 number
   const timers = React.useRef<Record<string, number>>({});
 
   const handleRadioChange = (newValue: string) => {
@@ -88,13 +77,19 @@ function OptionGroup({
     return excludedMap[optionValue] || false
   }
 
-  // 生成选项标签：A, B, C, D...
   const getOptionLabel = (index: number) => {
     return String.fromCharCode(65 + index)
   }
 
+  const isCorrectOption = (optionValue: string) => {
+    return showResult && correctAnswer !== undefined && optionValue === correctAnswer
+  }
+
+  const isWrongOption = (optionValue: string) => {
+    return showResult && isChecked(optionValue) && correctAnswer !== undefined && optionValue !== correctAnswer
+  }
+
   const stopPress = (id: string) => {
-    // 如果手指/鼠标抬起时，定时器还在运行，说明长按未达标，直接清除
     if (timers.current[id]) {
       window.clearTimeout(timers.current[id]);
       delete timers.current[id];
@@ -102,21 +97,13 @@ function OptionGroup({
   };
 
   const handleLongPressAction = (id: string) => {
-    // 触发排除操作
     handleExcludeToggle(id);
   };
 
   const startPress = (id: string) => {
-    // 1. 如果已有定时器，先清除（防止重复触发）
     stopPress(id);
-
-    // 2. 开启长按定时器（800ms）
     timers.current[id] = window.setTimeout(() => {
-
-      // 触发长按操作
       handleLongPressAction(id);
-
-      // 触发后清理 ID
       delete timers.current[id];
     }, 800);
   };
@@ -131,14 +118,18 @@ function OptionGroup({
         {options.map((option, index) => {
           const excluded = isExcluded(option.value);
           const checked = isChecked(option.value);
+          const correct = isCorrectOption(option.value);
+          const wrong = isWrongOption(option.value);
 
           return (
             <div
               key={option.value}
               className={cn(
-                "flex items-center gap-3 p-3 border border-border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer",
-                excluded && "opacity-50",
-                checked && "border-primary bg-primary/10 shadow-sm",
+                "option-item",
+                excluded && "option-excluded",
+                checked && !showResult && "option-selected",
+                correct && "option-correct",
+                wrong && "option-wrong",
                 optionClassName
               )}
               onMouseDown={() => startPress(option.value)}
@@ -150,16 +141,30 @@ function OptionGroup({
             >
               <div className="flex items-center gap-2 flex-1">
                 <div className={cn(
-                  "flex items-center justify-center w-6 h-6 rounded-full border font-medium",
-                  checked ? "bg-primary text-primary-foreground border-primary shadow-sm" : "border-primary text-primary"
+                  "option-label-circle",
+                  correct && "option-label-correct",
+                  wrong && "option-label-wrong",
+                  checked && !showResult && "option-label-selected",
+                  !checked && !correct && !wrong && "option-label-default"
                 )}>
-                  {getOptionLabel(index)}
+                  {correct ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  ) : wrong ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M3 3L9 9M9 3L3 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  ) : (
+                    getOptionLabel(index)
+                  )}
                 </div>
                 <span
                   className={cn(
-                    "flex-1",
+                    "flex-1 option-text",
                     excluded && "line-through",
-                    checked && "text-primary font-medium"
+                    correct && "option-text-correct",
+                    wrong && "option-text-wrong"
                   )}
                 >
                   {option.label}
@@ -179,7 +184,7 @@ function OptionGroup({
                   variant="ghost"
                   className="h-8 px-2 text-xs"
                   onClick={(e) => {
-                    e.stopPropagation(); // 阻止事件冒泡
+                    e.stopPropagation();
                     handleExcludeToggle(option.value);
                   }}
                 >
@@ -198,14 +203,18 @@ function OptionGroup({
       {options.map((option, index) => {
         const excluded = isExcluded(option.value);
         const checked = isChecked(option.value);
+        const correct = isCorrectOption(option.value);
+        const wrong = isWrongOption(option.value);
 
         return (
           <div
             key={option.value}
             className={cn(
-              "flex items-center gap-3 p-3 border border-border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer",
-              excluded && "opacity-50",
-              checked && "border-primary bg-primary/10 shadow-sm",
+              "option-item",
+              excluded && "option-excluded",
+              checked && !showResult && "option-selected",
+              correct && "option-correct",
+              wrong && "option-wrong",
               optionClassName
             )}
             onMouseDown={() => startPress(option.value)}
@@ -217,16 +226,30 @@ function OptionGroup({
           >
             <div className="flex items-center gap-2 flex-1">
               <div className={cn(
-                "flex items-center justify-center w-6 h-6 rounded-full border font-medium",
-                checked ? "bg-primary text-primary-foreground border-primary shadow-sm" : "border-primary text-primary"
+                "option-label-circle",
+                correct && "option-label-correct",
+                wrong && "option-label-wrong",
+                checked && !showResult && "option-label-selected",
+                !checked && !correct && !wrong && "option-label-default"
               )}>
-                {getOptionLabel(index)}
+                {correct ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                ) : wrong ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M3 3L9 9M9 3L3 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                ) : (
+                  getOptionLabel(index)
+                )}
               </div>
               <span
                 className={cn(
-                  "flex-1",
+                  "flex-1 option-text",
                   excluded && "line-through",
-                  checked && "text-primary font-medium"
+                  correct && "option-text-correct",
+                  wrong && "option-text-wrong"
                 )}
               >
                 {option.label}
@@ -263,7 +286,7 @@ function OptionGroup({
                 variant="ghost"
                 className="h-8 px-2 text-xs"
                 onClick={(e) => {
-                  e.stopPropagation(); // 阻止事件冒泡
+                  e.stopPropagation();
                   handleExcludeToggle(option.value);
                 }}
               >

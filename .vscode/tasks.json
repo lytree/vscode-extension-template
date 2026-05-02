@@ -15,13 +15,14 @@
       "type": "shell",
       "command": "pnpm run watch",
       "isBackground": true,
-      "group": "build",
-      "problemMatcher": [
-        "$tsc-watch"
-      ],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated"
+      "problemMatcher": {
+        "owner": "typescript",
+        "pattern": "$tsc",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*",
+          "endsPattern": "Watching for file changes."
+        }
       }
     }
   ]

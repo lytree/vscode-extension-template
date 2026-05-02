@@ -18,6 +18,8 @@ export type TQuestionItem = {
 
 export type TSolutionItem = TQuestionItem & {
   solution: string;
+  source?: string;
+  keypoints?: { id: number; name: string }[];
 };
 
 export type TCacheData = {
