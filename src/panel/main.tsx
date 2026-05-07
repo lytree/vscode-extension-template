@@ -7,9 +7,42 @@ import { getVscodeApi } from '../view/utils/vscodeApi'
 import "@/styles.css";
 const vscode = getVscodeApi()
 
+const THEME_KIND_CLASS_MAP: Record<string, string> = {
+  'vscode-theme-light': 'vscode-light',
+  'vscode-theme-dark': 'vscode-dark',
+  'vscode-theme-high-contrast': 'vscode-high-contrast',
+  'vscode-theme-high-contrast-light': 'vscode-high-contrast-light',
+};
+
+function syncThemeClass() {
+  const kind = document.body.getAttribute('data-vscode-theme-kind') || '';
+  const targetClass = THEME_KIND_CLASS_MAP[kind];
+  if (!targetClass) return;
+
+  const allThemeClasses = Object.values(THEME_KIND_CLASS_MAP);
+  allThemeClasses.forEach(cls => document.body.classList.remove(cls));
+  document.body.classList.add(targetClass);
+}
+
+function useThemeSync() {
+  useEffect(() => {
+    syncThemeClass();
+
+    const observer = new MutationObserver(syncThemeClass);
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['data-vscode-theme-kind'],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+}
+
 function App() {
   const navigate = useNavigate()
   const [isInitialized, setIsInitialized] = useState(false)
+
+  useThemeSync()
 
   useEffect(() => {
     // 处理初始化逻辑
@@ -26,11 +59,15 @@ function App() {
 
 
           if (message.command === 'routerInit') {
-            // 初始化完成，跳转到详情页
             setIsInitialized(true)
             navigate(message.postData.router)
-            // 处理初始化参数
-  
+          }
+
+          if (message.command === 'themeChanged') {
+            const themeKind = message.data?.themeKind;
+            if (themeKind) {
+              document.body.setAttribute('data-vscode-theme-kind', themeKind);
+            }
           }
         }
 
