@@ -161,7 +161,7 @@ code {
 .question-item {
     margin-bottom: 20px;
     padding: 10px;
-    border: 1px solid #ffffff;
+    /* border: 1px solid #ffffff; */
     border-radius: 5px;
 }
 
@@ -173,7 +173,7 @@ code {
 .solution-container {
     margin-top: 10px;
     padding: 10px;
-    background-color: rgba(255, 255, 255, 0.1);
+    /* background-color: rgba(255, 255, 255, 0.1); */
     border-radius: 5px;
 }
 
@@ -215,7 +215,7 @@ code {
 }
 
 .card {
-    border: 1px dashed #8888;
+    border: 1px dashed var(--border);
     border-radius: 8px;
     padding: 8px;
 }
@@ -372,7 +372,7 @@ button {
 .option-item.option-selected {
     border-color: var(--primary);
     background: color-mix(in srgb, var(--primary) 8%, transparent);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    /* box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); */
 }
 
 .option-item.option-correct {
